@@ -1,0 +1,12 @@
+{% extends "layout.twig" %}
+
+{% block css %}
+{{parent()}}
+{% endblock %}
+{% block content %}
+<img class="error" src="/images/not-found.png" />
+<h1 class="error">P&aacute;gina N&atilde;o Encontrada</h1>
+{% endblock %}
+{% block footer %}
+<div id="footer"><img src="/images/rodape-serpro-logo.png" /></div>
+{% endblock %}

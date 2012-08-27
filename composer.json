@@ -1,0 +1,26 @@
+{
+    "name": "mlalbuquerque/silex-skeleton",
+    "type": "library",
+    "description": "A Silex skeleton for projects",
+    "keywords": ["framework", "silex"],
+    "homepage": "http://github.com/mlalbuquerque/silex-skeleton",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Marcio Albuquerque",
+            "email": "marcio.lima.albuquerque@gmail.com"
+        }
+    ]
+    "require": {
+        "php": ">=5.3.*",
+        "silex/silex": "1.0.*",
+        "twig/twig": ">=1.8,<2.0-dev",
+        "doctrine/dbal": "2.2.*"
+    },
+    "minimum-stability": "dev",
+    "autoload": {
+        "psr-0": {
+            "": "lib"
+        }
+    }
+}

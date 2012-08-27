@@ -1,0 +1,12 @@
+{% extends "layout.twig" %}
+{% block content %}
+<div id="login">
+    <h1 class="title">Login</h1>
+    {% if error is not empty %}
+    <div class="error">{{error}}</div>
+    {% endif %}
+    <form action="/authenticate" method="post">
+        <button type="submit">Login</button>
+    </form>
+</div>
+{% endblock %}
