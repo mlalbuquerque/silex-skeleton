@@ -10,7 +10,7 @@
             "name": "Marcio Albuquerque",
             "email": "marcio.lima.albuquerque@gmail.com"
         }
-    ]
+    ],
     "require": {
         "php": ">=5.3.*",
         "silex/silex": "1.0.*",
