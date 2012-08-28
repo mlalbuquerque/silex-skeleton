@@ -1,15 +1,16 @@
 {
     "name": "mlalbuquerque/silex-skeleton",
     "type": "library",
-    "description": "A Silex skeleton for projects",
-    "keywords": ["framework", "silex"],
+    "description": "A Silex skeleton for little (not tiny) projects",
+    "keywords": ["framework","silex"],
     "homepage": "http://github.com/mlalbuquerque/silex-skeleton",
     "license": "MIT",
     "authors": [
         {
             "name": "Marcio Albuquerque",
             "email": "marcio.lima.albuquerque@gmail.com",
-            "homepage": "http://culturabeta.com.br"
+            "homepage": "http://culturabeta.com.br",
+            "role": "Developer"
         }
     ],
     "require": {
