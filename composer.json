@@ -19,6 +19,7 @@
         "twig/twig": ">=1.8,<2.0-dev",
         "doctrine/dbal": "2.2.*"
     },
+    "minimum-stability": "dev",
     "autoload": {
         "psr-0": {
             "": "lib"
