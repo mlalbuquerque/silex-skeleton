@@ -7,6 +7,8 @@ use Symfony\Component\HttpFoundation\Request as Request,
 define('__ROOT__', __DIR__.'/..');
 define('__WEBROOT__', __ROOT__.'/web');
 define('__UPLOAD_PATH__', __WEBROOT__.'/midia');
+// Nome do atributo do usuário para verificação de autorização
+define('__USER_AUTH_ATTR__', 'nome_perfil');
 
 // Bootstraping e Registrando novas bibliotecas
 $loader = require_once __DIR__.'/../vendor/autoload.php';
@@ -18,13 +20,7 @@ $app['debug'] = false;
 
 // Registrando o Doctrine
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => array(
-        'driver'    => 'pdo_mysql',
-        'host'      => 'localhost',
-        'dbname'    => 'DB',
-        'user'      => 'admin',
-        'password'  => '12345'
-    )
+    'db.options' => require_once __ROOT__ . '/config/database.php'
 ));
 
 // Registrando o Twig
@@ -71,7 +67,7 @@ $app->before(function (Request $request) use ($app) {
 //             URL's da Aplicação
 // ==================================================
 
-// ------------ AUTH ---------------------------------
+// ------------ AUTH Example ------------------------
 $app->get('/login', function() use ($app) {
     return $app['twig']->render('auth/login.twig', array(
         'error' => ''
@@ -79,7 +75,9 @@ $app->get('/login', function() use ($app) {
 })->bind('auth.login');
 
 $app->post('/authenticate', function (Request $request) use ($app) {
+    // Modifique o método getUser() em lib/Auth/Authentication.php
     $user = $app['auth.login']->getUser();
+    $user->setPermission($request->get('perfil'));
 
     if (!empty($user)) // Pode modificar para testar outras coisas
     {
@@ -99,10 +97,20 @@ $app->get('/logout', function () use ($app) {
     return $app->redirect('/login');
 })->bind('auth.logout');
 
-// ------ HOMEPAGE -----------------------
+// ------ HOMEPAGE Examples --------------------
 $app->get('/', function (Request $request) use ($app) {
     return $app['twig']->render('home.twig');
 })->bind('homepage');
+
+$app->get('/admin', function () use ($app) {
+    return $app['twig']->render('admin/main.twig');
+});
+
+//=====================================================
+//    CONTROLADORES
+//=====================================================
+// Basta incluir um arquivo que está na pasta "controllers"
+require_once 'usuario.php';
 
 //=====================================================
 //    Possíveis erros HTTP

@@ -17,9 +17,10 @@ class Authentication
         return $this->session->has('user');
     }
     
-    public function getUser($login, $password)
+    // Modifique este método como quiser
+    public function getUser()
     {
-        $user = new \Model\User();
+        $user = new \Model\Usuario();
 
         return $user;
     }

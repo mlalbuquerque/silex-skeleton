@@ -3,9 +3,17 @@
     <head>
         <META http-equiv="Content-Type" content="text/html; charset=UTF-8" />
         <title>Silex Skeleton</title>
-        {% block css %}{% endblock %}
+        {% block css %}
+        <link href="/css/main.css" rel="stylesheet" type="text/css" />
+        {% endblock %}
     </head>
     <body>
+        {% if app.session.get('user') is not null %}
+        <div style="position: absolute; right: 100px; font-family: Verdana, sans-serif;">
+            Usu&aacute;rio: {{ app.session.get('user').name }}
+            ({{ app.session.get('user').nome_perfil }})
+        </div>
+        {% endif %}
         <div id="content">
             {% block content %}{% endblock %}
             {% block footer %}{% endblock %}

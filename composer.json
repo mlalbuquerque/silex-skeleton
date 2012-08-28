@@ -1,6 +1,6 @@
 {
     "name": "mlalbuquerque/silex-skeleton",
-    "type": "library",
+    "type": "skeleton",
     "description": "A Silex skeleton for projects",
     "keywords": ["framework", "silex"],
     "homepage": "http://github.com/mlalbuquerque/silex-skeleton",
@@ -8,7 +8,8 @@
     "authors": [
         {
             "name": "Marcio Albuquerque",
-            "email": "marcio.lima.albuquerque@gmail.com"
+            "email": "marcio.lima.albuquerque@gmail.com",
+            "homepage": "http://culturabeta.com.br"
         }
     ],
     "require": {

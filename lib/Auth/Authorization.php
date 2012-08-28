@@ -51,12 +51,13 @@ class Authorization
     private function verifyAuthorization($auth_type, \Model\User $user, $route)
     {
         $auth = false;
-        if (isset($this->paths[$auth_type][$user->nome_perfil]))
+        $auth_attr = __USER_AUTH_ATTR__;
+        if (isset($this->paths[$auth_type][$user->$auth_attr]))
         {
-            if ($this->paths[$auth_type][$user->nome_perfil] == 'all')
+            if ($this->paths[$auth_type][$user->$auth_attr] == 'all')
                 return true;
 
-            foreach ($this->paths[$auth_type][$user->nome_perfil] as $path)
+            foreach ($this->paths[$auth_type][$user->$auth_attr] as $path)
             {
                 if (preg_match($this->getRegexPattern($path), $route))
                 {

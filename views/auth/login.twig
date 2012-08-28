@@ -1,12 +1,17 @@
 {% extends "layout.twig" %}
 {% block content %}
 <div id="login">
-    <h1 class="title">Login</h1>
-    {% if error is not empty %}
-    <div class="error">{{error}}</div>
-    {% endif %}
-    <form action="/authenticate" method="post">
-        <button type="submit">Login</button>
-    </form>
+    <h1 style="text-align: center;">LOGIN</h1>
+    <h3 style="text-align: center;">Seja bem vindo ao Silex Skeleton</h3>
+    <div style="text-align: center;">
+        <form action="/authenticate" method="post">
+            <input type="hidden" name="perfil" value="admin" />
+            <button type="submit">Login - Admin</button>
+        </form>
+        <form action="/authenticate" method="post">
+            <input type="hidden" name="perfil" value="simple_user" />
+            <button type="submit">Login - Usu&aacute;rio</button>
+        </form>
+    </div>
 </div>
 {% endblock %}
