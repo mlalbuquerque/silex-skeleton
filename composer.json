@@ -1,6 +1,6 @@
 {
     "name": "mlalbuquerque/silex-skeleton",
-    "type": "skeleton",
+    "type": "library",
     "description": "A Silex skeleton for projects",
     "keywords": ["framework", "silex"],
     "homepage": "http://github.com/mlalbuquerque/silex-skeleton",
