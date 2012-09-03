@@ -9,8 +9,8 @@ class SilexSkeleton
 
     public static function moveFiles(Event $event)
     {
-        $basepath = __DIR__ . '/../../silex-skeleton';
-        $targetpath = __DIR__ . '/../../../../';
+        $basepath = __DIR__ . '/../../../silex-skeleton';
+        $targetpath = __DIR__ . '/../../../../..';
         
         if (!rename($basepath . '/config', $targetpath . '/config')      ||
             !rename($basepath . '/config', $targetpath . '/controllers') ||
