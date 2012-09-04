@@ -24,9 +24,5 @@
             "": "lib"
         }
     },
-    "scripts": {
-        "post-install-cmd": "Mlalbuquerque\\SilexSkeleton::moveFiles",
-        "post-update-cmd": "Mlalbuquerque\\SilexSkeleton::moveFiles"
-    },
     "minimum-stability": "dev"
 }
