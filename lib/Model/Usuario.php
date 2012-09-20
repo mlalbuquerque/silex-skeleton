@@ -12,5 +12,10 @@ class Usuario extends User
         $this->name = 'Fulano de Tal';
         $this->email = 'fulano.tal@email.com';
     }
+    
+    public function __toString()
+    {
+        return $this->name;
+    }
 
 }

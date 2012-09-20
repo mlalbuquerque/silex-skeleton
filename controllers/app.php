@@ -9,6 +9,8 @@ define('__WEBROOT__', __ROOT__.'/web');
 define('__UPLOAD_PATH__', __WEBROOT__.'/midia');
 // Nome do atributo do usuário para verificação de autorização
 define('__USER_AUTH_ATTR__', 'nome_perfil');
+// Nome do método a ser chamado pelo Logger para registrar quem está atuando
+define('__USERNAME_METHOD_LOGGED__', '__toString');
 
 // Bootstraping e Registrando novas bibliotecas
 $loader = require_once __DIR__.'/../vendor/autoload.php';
@@ -16,7 +18,7 @@ $loader = require_once __DIR__.'/../vendor/autoload.php';
 // Iniciando a App e ligando o debug
 $app = new Silex\Application();
 date_default_timezone_set('America/Sao_Paulo'); // Timezone padrão
-$app['debug'] = false;
+$app['debug'] = true;
 
 // Registrando o Doctrine
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
@@ -26,6 +28,17 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 // Registrando o Twig
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path'       => __ROOT__.'/views'
+));
+
+// Registrando o Monolog - objeto para logging
+$app->register(new Log\LoggerServiceProvider(), array(
+    'monolog.name'    => 'MYAPP', // Pode trocar para o nome da sua aplicação
+    'monolog.level'   => $app['debug'] ? \Monolog\Logger::DEBUG : \Monolog\Logger::WARNING,
+    'monolog.logfile' => __ROOT__ . '/log/silex.log',
+    'monolog.handler' => function () use ($app) {
+        // Pode-se mudar o handler do log. Para mais classes, veja https://github.com/Seldaek/monolog#handlers
+        return new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.level']);
+    }
 ));
 
 // Criando novos serviços
@@ -44,8 +57,11 @@ $app['bo'] = $app->share(function ($app) {
 
 // Iniciando a sessão
 $app->register(new Silex\Provider\SessionServiceProvider());
-//var_dump(get_class_methods(get_class($app['session']))); die;
 $app['session']->start();
+
+// Registrando o Logger de SQL apenas para debug
+if ($app['debug'])
+    $app['db.config']->setSQLLogger(new Log\SilexSkeletonLogger($app['session'], $app['monolog']));
 
 // ==================================================
 //     Filtros (antes e depois das requisições)
@@ -59,7 +75,7 @@ $app->before(function (Request $request) use ($app) {
             return $app->redirect('/login');
 
         if (!$app['auth.permission']->isAuthorized($route))
-            return $app->abort(403, 'Você não pode acessar esta área!');
+            return $app->abort(403, $route . ' - Você não pode acessar esta área!');
     }
 });
 
@@ -104,7 +120,7 @@ $app->get('/', function (Request $request) use ($app) {
 
 $app->get('/admin', function () use ($app) {
     return $app['twig']->render('admin/main.twig');
-});
+})->bind('admin.main');
 
 //=====================================================
 //    CONTROLADORES
