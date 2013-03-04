@@ -2,7 +2,7 @@
 
 namespace Log;
 
-class SilexSkeletonLogger implements \Doctrine\DBAL\Logging\SQLLogger
+class SilexSkeletonSQLLogger implements \Doctrine\DBAL\Logging\SQLLogger
 {
     
     private $session, $logger;

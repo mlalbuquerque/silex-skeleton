@@ -4,42 +4,68 @@ use Symfony\Component\HttpFoundation\Request as Request,
     Symfony\Component\HttpFoundation\Response as Response;
 
 // CONSTS
-define('__ROOT__', __DIR__.'/..');
-define('__WEBROOT__', __ROOT__.'/web');
-define('__UPLOAD_PATH__', __WEBROOT__.'/midia');
+define('APP_NAME', 'SILEX_SKELETON');
+define('HOST', $_SERVER['HTTP_HOST']);
+define('ROOT', __DIR__ . '/..');
+define('WEBROOT', ROOT . '/web');
 // Nome do atributo do usuário para verificação de autorização
-define('__USER_AUTH_ATTR__', 'nome_perfil');
+define('USER_AUTH_ATTR', 'nome_perfil');
 // Nome do método a ser chamado pelo Logger para registrar quem está atuando
-define('__USERNAME_METHOD_LOGGED__', '__toString');
+define('USERNAME_METHOD_LOGGED', '__toString');
 
-// Bootstraping e Registrando novas bibliotecas
+// New libs bootstraping and register
 $loader = require_once __DIR__.'/../vendor/autoload.php';
 
-// Iniciando a App e ligando o debug
+// Starting the engines and debugging
 $app = new Silex\Application();
-date_default_timezone_set('America/Sao_Paulo'); // Timezone padrão
 $app['debug'] = true;
+date_default_timezone_set('America/Sao_Paulo'); // Your default Timezone
 
-// Registrando o Doctrine
+// Doctrine register
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => require_once __ROOT__ . '/config/database.php'
+    'db.options' => require_once ROOT . '/config/database.php'
 ));
 
-// Registrando o Twig
+// Twig register
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
-    'twig.path'       => __ROOT__.'/views'
+    'twig.path' => ROOT . '/views'
 ));
 
-// Registrando o Monolog - objeto para logging
+// Monolog register
 $app->register(new Log\LoggerServiceProvider(), array(
-    'monolog.name'    => 'MYAPP', // Pode trocar para o nome da sua aplicação
-    'monolog.level'   => $app['debug'] ? \Monolog\Logger::DEBUG : \Monolog\Logger::WARNING,
-    'monolog.logfile' => __ROOT__ . '/log/silex.log',
+    'monolog.name'    => APP_NAME,
+    'monolog.level'   => $app['debug'] ? \Monolog\Logger::DEBUG : \Monolog\Logger::INFO,
+    'monolog.logfile' => ROOT . '/log/silex.log',
+    'monolog.maxfiles' => 30,
     'monolog.handler' => function () use ($app) {
-        // Pode-se mudar o handler do log. Para mais classes, veja https://github.com/Seldaek/monolog#handlers
-        return new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.level']);
+        // For other classes see https://github.com/Seldaek/monolog#handlers
+        return new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.maxfiles'], $app['monolog.level']);
     }
 ));
+
+// Questões de Browser
+if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
+{
+    preg_match('#(?P<name>Firefox|Chrome)/(?P<version>\d+.\d+)#', $_SERVER['HTTP_USER_AGENT'], $browser);
+    $app['browser.name'] = strtolower($browser['name']);
+}
+
+// Registrando o uso de Browser Logs
+if ($app['debug'])
+{
+    if ($app['browser.name'] == 'firefox')
+        $handler = new Monolog\Handler\FirePHPHandler();
+    elseif($app['browser.name'] == 'chrome')
+        $handler = new Monolog\Handler\ChromePHPHandler();
+    else
+        $handler = null;
+
+    $app['monolog'] = $app->share($app->extend('monolog', function ($monolog, $app) use ($handler) {
+        if ($handler)
+            $monolog->pushHandler($handler);
+        return $monolog;
+    }));
+}
 
 // Criando novos serviços
 $app['auth.login'] = $app->share(function ($app) {
@@ -56,12 +82,17 @@ $app['bo'] = $app->share(function ($app) {
 });
 
 // Iniciando a sessão
-$app->register(new Silex\Provider\SessionServiceProvider());
+$app->register(new Silex\Provider\SessionServiceProvider(), array(
+    'session.storage.options' => array(
+        'name' => '_' . APP_NAME,
+        'id'   => uniqid('_' . APP_NAME)
+    )
+));
 $app['session']->start();
 
 // Registrando o Logger de SQL apenas para debug
 if ($app['debug'])
-    $app['db.config']->setSQLLogger(new Log\SilexSkeletonLogger($app['session'], $app['monolog']));
+    $app['db.config']->setSQLLogger(new Log\SilexSkeletonSQLLogger($app['session'], $app['monolog']));
 
 // ==================================================
 //     Filtros (antes e depois das requisições)

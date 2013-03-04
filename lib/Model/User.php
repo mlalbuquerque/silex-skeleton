@@ -9,13 +9,13 @@ class User extends Entity
     
     public function setPermission($permission)
     {
-        $auth_attr = __USER_AUTH_ATTR__;
+        $auth_attr = USER_AUTH_ATTR;
         $this->$auth_attr = $permission;
     }
     
     public function getPermission()
     {
-        $auth_attr = __USER_AUTH_ATTR__;
+        $auth_attr = USER_AUTH_ATTR;
         return $this->$auth_attr;
     }
     

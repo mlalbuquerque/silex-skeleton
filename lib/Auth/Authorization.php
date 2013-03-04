@@ -10,7 +10,7 @@ class Authorization
     public function __construct(\Symfony\Component\HttpFoundation\Session\Session $sessionObject)
     {
         $this->session = $sessionObject;
-        $this->paths = require_once __ROOT__ . '/config/auth.php';
+        $this->paths = require_once ROOT . '/config/auth.php';
     }
     
     public function freePass($route)
@@ -51,7 +51,7 @@ class Authorization
     private function verifyAuthorization($auth_type, \Model\User $user, $route)
     {
         $auth = false;
-        $auth_attr = __USER_AUTH_ATTR__;
+        $auth_attr = USER_AUTH_ATTR;
         if (isset($this->paths[$auth_type][$user->$auth_attr]))
         {
             if ($this->paths[$auth_type][$user->$auth_attr] == 'all')

@@ -13,19 +13,22 @@ class LoggerServiceProvider extends \Silex\Provider\MonologServiceProvider
     public function boot(\Silex\Application $app)
     {
         $app->before(function (\Symfony\Component\HttpFoundation\Request $request) use ($app) {
-            $route = $request->attributes->get('_route');
+            $routeName = $request->attributes->get('_route');
+            $route = $request->getRequestUri();
 
             $log  = $_SERVER['REMOTE_ADDR'] . ' - ';
-            if ($app['session']->has('user') && defined('__USERNAME_METHOD_LOGGED__'))
+            if ($app['session']->has('user') && defined('USERNAME_METHOD_LOGGED'))
             {
                 $user = $app['session']->get('user');
-                $method = __USERNAME_METHOD_LOGGED__;
+                $method = USERNAME_METHOD_LOGGED;
                 $log .= $user->$method();
             }
-            if (!empty($route))
-                $log .= ' está acessando a rota "' . $route . '" (' . $request->getRequestUri() . ')';
+            if (!empty($routeName))
+                $log .= ' está acessando a rota "' . $routeName . '" (' . $route . ')';
+            else if (!file_exists(__WEBROOT__ . $route))
+                $log .= ' tentou acessar um arquivo ou rota inexistente (' . $route . ')!';
             else
-                $log .= ' tentou acessar uma rota inexistente (' . $request->getRequestUri() . ')!';
+                $log .= ' está acessando um arquivo (' . $route . ')!';
             $app['monolog']->addInfo($log);
         });
         
