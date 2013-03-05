@@ -1,5 +1,5 @@
 <?php
 
-$app = require __DIR__.'/../controllers/app.php';
+$app = require __DIR__.'/../config/bootstrap.php';
 
 $app->run();

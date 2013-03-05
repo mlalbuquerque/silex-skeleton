@@ -15,14 +15,14 @@ class DaoLoader implements \ArrayAccess
 
     public function offsetExists($dao_name)
     {
-        return array_key_exists(\Util\Text::classNameOnly($dao_name), $this->container);
+        return array_key_exists(\Helper\Text::classNameOnly($dao_name), $this->container);
     }
 
     public function offsetGet($dao_name)
     {
         if (!array_key_exists($dao_name, $this->container))
         {
-            $dao_name = \Util\Text::classNameOnly($dao_name);
+            $dao_name = \Helper\Text::classNameOnly($dao_name);
             $dao = "\\Model\\DAO\\$dao_name";
             $this->container[$dao_name] = new $dao($this->db);
         }
@@ -35,12 +35,12 @@ class DaoLoader implements \ArrayAccess
         if (!is_object($dao))
             throw new Exception('Second argument msut be an object!');
         
-        $this->container[\Util\Text::classNameOnly($dao_name)] = $dao;
+        $this->container[\Helper\Text::classNameOnly($dao_name)] = $dao;
     }
 
     public function offsetUnset($dao_name)
     {
-        unset($this->container[\Util\Text::classNameOnly($dao_name)]);
+        unset($this->container[\Helper\Text::classNameOnly($dao_name)]);
     }
     
 }

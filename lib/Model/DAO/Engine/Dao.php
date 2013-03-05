@@ -47,7 +47,7 @@ abstract class Dao
         $object = false;
         if (!empty($values))
         {
-            $class = '\\Model\\'.\Util\Text::classNameOnly(get_called_class());
+            $class = '\\Model\\'.\Helper\Text::classNameOnly(get_called_class());
             $object = new $class();
             $object->fromArray($values);
         }

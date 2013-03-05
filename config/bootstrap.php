@@ -3,14 +3,15 @@
 use Symfony\Component\HttpFoundation\Request as Request,
     Symfony\Component\HttpFoundation\Response as Response;
 
-// CONSTS
+// Constants
 define('APP_NAME', 'SILEX_SKELETON');
 define('HOST', $_SERVER['HTTP_HOST']);
 define('ROOT', __DIR__ . '/..');
 define('WEBROOT', ROOT . '/web');
-// Nome do atributo do usuário para verificação de autorização
+define('CONFIGROOT', ROOT . '/config');
+// Attribute name used in authorization
 define('USER_AUTH_ATTR', 'nome_perfil');
-// Nome do método a ser chamado pelo Logger para registrar quem está atuando
+// Attribute name used in log
 define('USERNAME_METHOD_LOGGED', '__toString');
 
 // New libs bootstraping and register
@@ -43,14 +44,14 @@ $app->register(new Log\LoggerServiceProvider(), array(
     }
 ));
 
-// Questões de Browser
+// Browser info
 if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
 {
     preg_match('#(?P<name>Firefox|Chrome)/(?P<version>\d+.\d+)#', $_SERVER['HTTP_USER_AGENT'], $browser);
     $app['browser.name'] = strtolower($browser['name']);
 }
 
-// Registrando o uso de Browser Logs
+// Browser Log register
 if ($app['debug'])
 {
     if ($app['browser.name'] == 'firefox')
@@ -67,7 +68,7 @@ if ($app['debug'])
     }));
 }
 
-// Criando novos serviços
+// Helper Services
 $app['auth.login'] = $app->share(function ($app) {
     return new Auth\Authentication($app['session']);
 });
@@ -81,7 +82,7 @@ $app['bo'] = $app->share(function ($app) {
     return new BO\Engine\BoLoader($app['dao']);
 });
 
-// Iniciando a sessão
+// Starting Session
 $app->register(new Silex\Provider\SessionServiceProvider(), array(
     'session.storage.options' => array(
         'name' => '_' . APP_NAME,
@@ -90,12 +91,12 @@ $app->register(new Silex\Provider\SessionServiceProvider(), array(
 ));
 $app['session']->start();
 
-// Registrando o Logger de SQL apenas para debug
+// SQL Logger register
 if ($app['debug'])
     $app['db.config']->setSQLLogger(new Log\SilexSkeletonSQLLogger($app['session'], $app['monolog']));
 
 // ==================================================
-//     Filtros (antes e depois das requisições)
+//     Permission Filter
 // ==================================================
 $app->before(function (Request $request) use ($app) {
     $route = $request->attributes->get('_route');
@@ -110,57 +111,11 @@ $app->before(function (Request $request) use ($app) {
     }
 });
 
-// ==================================================
-//             URL's da Aplicação
-// ==================================================
-
-// ------------ AUTH Example ------------------------
-$app->get('/login', function() use ($app) {
-    return $app['twig']->render('auth/login.twig', array(
-        'error' => ''
-    ));
-})->bind('auth.login');
-
-$app->post('/authenticate', function (Request $request) use ($app) {
-    // Modifique o método getUser() em lib/Auth/Authentication.php
-    $user = $app['auth.login']->getUser();
-    $user->setPermission($request->get('perfil'));
-
-    if (!empty($user)) // Pode modificar para testar outras coisas
-    {
-        $app['session']->set('user', $user);
-        return $app->redirect('/');
-    }
-    else
-    {
-        return $app['twig']->render('auth/login.twig', array(
-            'error' => 'Login falhou! Tente novamente.'
-        ));
-    }
-})->bind('auth.authenticate');
-
-$app->get('/logout', function () use ($app) {
-    $app['session']->remove('user');
-    return $app->redirect('/login');
-})->bind('auth.logout');
-
-// ------ HOMEPAGE Examples --------------------
-$app->get('/', function (Request $request) use ($app) {
-    return $app['twig']->render('home.twig');
-})->bind('homepage');
-
-$app->get('/admin', function () use ($app) {
-    return $app['twig']->render('admin/main.twig');
-})->bind('admin.main');
+// Register routes
+Helper\Routes::register($app);
 
 //=====================================================
-//    CONTROLADORES
-//=====================================================
-// Basta incluir um arquivo que está na pasta "controllers"
-require_once 'usuario.php';
-
-//=====================================================
-//    Possíveis erros HTTP
+//              HTTP Errors
 //=====================================================
 $app->error(function(\Exception $e, $code) use ($app) {
     if (!$app['debug'])

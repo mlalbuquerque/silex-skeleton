@@ -14,7 +14,7 @@ class Bo
         $this->labels = array();
         $cols = $this->dao->getColumns();
         foreach ($cols as $col)
-            $this->labels[$col] = \Util\Text::generateLabel($col);
+            $this->labels[$col] = \Helper\Text::generateLabel($col);
     }
     
     public function getColLabels(array $only_these_cols = array()) {

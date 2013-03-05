@@ -10,7 +10,7 @@ class Entity
         foreach ($values as $attribute => $value)
             if (property_exists($this, $attribute))
             {
-                $attribute = \Util\Text::sanitizeAttributeName($attribute);
+                $attribute = \Helper\Text::sanitizeAttributeName($attribute);
                 $this->$attribute = $value;
             }
     }

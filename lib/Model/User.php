@@ -1,7 +1,6 @@
 <?php
 
-// O melhor é seu usuário do sistema
-// herdar desta Classe.
+// Your system's user entity should extends this class
 namespace Model;
 
 class User extends Entity
