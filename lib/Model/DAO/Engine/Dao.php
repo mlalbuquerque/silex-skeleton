@@ -40,8 +40,14 @@ abstract class Dao
     {
         $this->prepareSelectFrom();
         
+        if (isset($options['select']))
+            $this->select($options['select']);
+        
         if (isset($options['where']))
             $this->where($options['where']);
+        
+        if (isset($options['join']))
+            $this->join ($options['join']);
         
         return $this->entityFromArray($this->getSingleResult());
     }
@@ -126,7 +132,7 @@ abstract class Dao
         $this->qb->resetQueryParts();
         $this->qb->setParameters(array());
         $this->qb
-             ->select($this->getSelectColumns())
+             ->select($this->getSelectColumns($this->getTableAlias()))
              ->from($this->getTableName(), $this->getTableAlias());
         if (!empty($append))
             $this->qb->addSelect(implode(', ', $append));
@@ -163,6 +169,11 @@ abstract class Dao
         return $objList;
     }
     
+    protected function select($select)
+    {
+        $this->qb->addSelect($select);
+    }
+
     /**
      * Constructs the where condition using QueryBuilder
      * @param string $condition
@@ -183,8 +194,9 @@ abstract class Dao
     {
         $type = isset($joinRules['type']) ? strtolower($joinRules['type']) : '';
         $method = empty($type) ? 'join' : $type . 'Join';
-        $this->qb->$method($joinRules['from'], $joinRules['to'], $joinRules['condition']);
-        $this->qb->setParameters($joinRules['values']);
+        $this->qb->$method($this->getTableAlias(), $joinRules['table'], $joinRules['alias'], $joinRules['condition']);
+        if (isset($joinRules['values']))
+            $this->qb->setParameters($joinRules['values']);
     }
 
     /**
