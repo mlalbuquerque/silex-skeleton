@@ -18,9 +18,14 @@ abstract class Entity implements \ArrayAccess
             }
     }
     
-    public function oneToMany()
+    public static function oneToMany()
     {
         return array();
+    }
+    
+    public function getPrimaryKey()
+    {
+        return null;
     }
 
     public function offsetExists($offset)

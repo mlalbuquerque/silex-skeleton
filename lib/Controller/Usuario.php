@@ -10,6 +10,10 @@ class Usuario
         $cols = $app['bo']['Usuario']->getColLabels(array('nome', 'login', 'telefones'));
         $users = $app['bo']['Usuario']->listar();
         $telefone = $app['bo']['Telefone']->obterPorId(1);
+        
+        echo '<pre>';
+        var_dump($users);
+        echo '</pre>';
 
         return $app['twig']->render('usuario/main.twig', array(
             'cols'  => $cols,

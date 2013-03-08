@@ -31,7 +31,7 @@ abstract class Dao
             $this->orderBy($options['orderby']);
         
         if (isset($options['join']))
-            $this->join ($options['join']);
+            $this->join($options['join']);
         
         return $this->entitiesFromArray($this->getResults(), $withRelations);
     }
@@ -228,10 +228,16 @@ abstract class Dao
             foreach ($oneToMany as $table => $info) {
                 $this->qb->resetQueryParts();
                 $this->qb->setParameters(array());
+                
+                $alias = substr($table, 0, 1);
                 $this->qb->select('*')
-                        ->from($table, substr($table, 0, 1))
+                        ->from($table, $alias)
                         ->where($info['attribute'] . ' = :attribute')
-                        ->setParameter('attribute', $entity->id);
+                        ->setParameter('attribute', $entity->getPrimaryKey());
+                if (isset($info['middle'])) {
+                    $condition = 'middle.' . $info['middle_attribute'] . ' = ' . $alias . '.' . $info['attribute'];
+                    $this->qb->innerJoin($alias, $info['middle'], 'middle', $condition);
+                }
                 $entity->$table = $this->entitiesFromArray($this->getResults(), false, '\\Model\\' . $info['class']);
             }
         }
