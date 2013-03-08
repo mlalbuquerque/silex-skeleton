@@ -17,5 +17,15 @@ class Usuario extends User
     {
         return $this->name;
     }
+    
+    public function oneToMany()
+    {
+        return array(
+            'telefones' => array(
+                'class'     => 'Telefone', 
+                'attribute' => 'id_usuario'
+            )
+        );
+    }
 
 }

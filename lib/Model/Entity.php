@@ -2,7 +2,7 @@
 
 namespace Model;
 
-class Entity implements \ArrayAccess
+abstract class Entity implements \ArrayAccess
 {
     
     private $foreignAttributes;
@@ -14,19 +14,13 @@ class Entity implements \ArrayAccess
                 $attribute = \Helper\Text::sanitizeAttributeName($attribute);
                 $this->$attribute = $value;
             } else {
-                if (!empty($this->foreignAttributes) && key_exists($attribute, $this->foreignAttributes)) {
-                    if (is_array($this->foreignAttributes[$attribute])) {
-                        $this->foreignAttributes[$attribute][] = $value;
-                    } else {
-                        $this->foreignAttributes[$attribute] = array(
-                            $this->foreignAttributes[$attribute],
-                            $value
-                        );
-                    }
-                } else {
-                    $this->foreignAttributes[$attribute] = $value;
-                }
+                $this->foreignAttributes[$attribute] = $value;
             }
+    }
+    
+    public function oneToMany()
+    {
+        return array();
     }
 
     public function offsetExists($offset)

@@ -2,15 +2,18 @@
 
 namespace BO\Engine;
 
+use BO\Engine\BoLoader;
+use Model\DAO\Engine\DaoLoader;
+
 class Bo
 {
     
-    protected $dao_loader, $dao, $labels;
+    protected $loadBO, $dao, $labels;
 
-    public function __construct(\Model\DAO\Engine\DaoLoader $dao)
+    public function __construct(BoLoader $bo_loader, DaoLoader $dao_loader)
     {
-        $this->dao_loader = $dao;
-        $this->dao = $this->dao_loader[get_called_class()];
+        $this->loadBO = $bo_loader;
+        $this->dao = $dao_loader[get_called_class()];
         $this->labels = array();
         $cols = $this->dao->getColumns();
         foreach ($cols as $col)
@@ -21,8 +24,13 @@ class Bo
         if (!empty($only_these_cols))
         {
             $cols = array();
-            foreach ($only_these_cols as $col)
+            foreach ($only_these_cols as $col) {
+                if (!key_exists($col, $this->labels))
+                    $this->labels[$col] = \Helper\Text::generateLabel($col);
+                        
                 $cols[$col] = $this->labels[$col];
+            }
+                
             
             return $cols;
         }

@@ -23,7 +23,7 @@ class BoLoader implements \ArrayAccess
         if (!array_key_exists($bo_name, $this->container))
         {
             $class = "BO\\$bo_name";
-            $this->container[$bo_name] = new $class($this->dao);
+            $this->container[$bo_name] = new $class($this, $this->dao);
         }
         
         return $this->container[$bo_name];

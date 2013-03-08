@@ -17,7 +17,7 @@ abstract class Dao
     abstract protected function getTableName();
     abstract protected function getTableAlias();
     
-    public function findAll(array $options = array())
+    public function findAll(array $options = array(), $withRelations = false)
     {
         $this->prepareSelectFrom();
         
@@ -33,10 +33,10 @@ abstract class Dao
         if (isset($options['join']))
             $this->join ($options['join']);
         
-        return $this->entitiesFromArray($this->getResults());
+        return $this->entitiesFromArray($this->getResults(), $withRelations);
     }
     
-    public function findOne(array $options = array())
+    public function findOne(array $options = array(), $withRelations = false)
     {
         $this->prepareSelectFrom();
         
@@ -48,8 +48,8 @@ abstract class Dao
         
         if (isset($options['join']))
             $this->join ($options['join']);
-        
-        return $this->entityFromArray($this->getSingleResult());
+
+        return $this->entityFromArray($this->getSingleResult(), $withRelations);
     }
     
     public function count(array $options = array())
@@ -143,14 +143,16 @@ abstract class Dao
      * @param mixed $values 
      * @return \Model\Entity
      */
-    protected function entityFromArray($values)
+    protected function entityFromArray($values, $withRelations, $scope = null)
     {
         $object = false;
         if (!empty($values))
         {
-            $class = '\\Model\\'.\Helper\Text::classNameOnly(get_called_class());
+            $class = empty($scope) ? '\\Model\\'.\Helper\Text::classNameOnly(get_called_class()) : $scope;
             $object = new $class();
             $object->fromArray($values);
+            if ($withRelations)
+                $this->loadRelations($object);
         }
         return $object;
     }
@@ -160,11 +162,11 @@ abstract class Dao
      * @param mixed $list
      * @return array An array of \Model\Entity
      */
-    protected function entitiesFromArray($list)
+    protected function entitiesFromArray($list, $withRelations, $scope = null)
     {
         $objList = array();
         foreach ($list as $values)
-            $objList[] = $this->entityFromArray($values);
+            $objList[] = $this->entityFromArray($values, $withRelations, $scope);
         
         return $objList;
     }
@@ -219,7 +221,23 @@ abstract class Dao
         return $cols;
     }
     
-    /**
+    private function loadRelations(\Model\Entity $entity)
+    {
+        $oneToMany = $entity->oneToMany();
+        if (!empty($oneToMany)) {
+            foreach ($oneToMany as $table => $info) {
+                $this->qb->resetQueryParts();
+                $this->qb->setParameters(array());
+                $this->qb->select('*')
+                        ->from($table, substr($table, 0, 1))
+                        ->where($info['attribute'] . ' = :attribute')
+                        ->setParameter('attribute', $entity->id);
+                $entity->$table = $this->entitiesFromArray($this->getResults(), false, '\\Model\\' . $info['class']);
+            }
+        }
+    }
+
+        /**
      * Sets the columns to use in SELECT
      * @param array $selectedCols Columns to use
      */

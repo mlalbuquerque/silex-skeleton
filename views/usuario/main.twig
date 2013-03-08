@@ -19,10 +19,17 @@
         <tr>
             <td>{{ user.nome }}</td>
             <td>{{ user.login }}</td>
+            <td>
+                {% for telefone in user.telefones %}
+                {{ telefone.numero }}<br>
+                {% else %}
+                ---
+                {% endfor %}
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-TOTAL: {{total}}
+TOTAL de usuários: {{total}}<br>
 <h6 style="text-align: center;">by <a href="http://twitter.com/mlalbuquerque">@mlalbuquerque</a></h6>
 {% endblock %}
