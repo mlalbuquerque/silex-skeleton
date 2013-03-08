@@ -17,10 +17,12 @@ class Authentication
         return $this->session->has('user');
     }
     
-    // Modifique este método como quiser
+    // Modify this method to return your session user
     public function getUser()
     {
         $user = new \Model\Usuario();
+        $user->name = 'John Doe';
+        $user->email = 'john.doe@email.com';
 
         return $user;
     }

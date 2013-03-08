@@ -9,8 +9,6 @@ define('HOST', $_SERVER['HTTP_HOST']);
 define('ROOT', __DIR__ . '/..');
 define('WEBROOT', ROOT . '/web');
 define('CONFIGROOT', ROOT . '/config');
-// Attribute name used in authorization
-define('USER_AUTH_ATTR', 'nome_perfil');
 // Attribute name used in log
 define('USERNAME_METHOD_LOGGED', '__toString');
 

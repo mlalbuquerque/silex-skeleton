@@ -17,11 +17,12 @@
     <tbody>
         {% for user in users %}
         <tr>
-            <td>{{ user.name }}</td>
-            <td>{{ user.email }}</td>
+            <td>{{ user.nome }}</td>
+            <td>{{ user.login }}</td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
+TOTAL: {{total}}
 <h6 style="text-align: center;">by <a href="http://twitter.com/mlalbuquerque">@mlalbuquerque</a></h6>
 {% endblock %}

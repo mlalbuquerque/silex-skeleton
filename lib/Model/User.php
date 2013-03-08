@@ -6,16 +6,16 @@ namespace Model;
 class User extends Entity
 {
     
+    public $profile;
+    
     public function setPermission($permission)
     {
-        $auth_attr = USER_AUTH_ATTR;
-        $this->$auth_attr = $permission;
+        $this->profile = $permission;
     }
     
     public function getPermission()
     {
-        $auth_attr = USER_AUTH_ATTR;
-        return $this->$auth_attr;
+        return $this->profile;
     }
     
 }

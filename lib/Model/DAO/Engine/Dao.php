@@ -11,41 +11,110 @@ abstract class Dao
     {
         $this->db = $db;
         $this->qb = $db->createQueryBuilder();
-        $this->cols = null;
+        $this->cols = $this->getOriginalColumns();
     }
-    
-    abstract public function findAll(array $options = array());
-    abstract public function findOne(array $options = array());
-    abstract public function getTotal(array $options = array());
-    abstract public static function getColumns();
+
     abstract protected function getTableName();
     abstract protected function getTableAlias();
     
-    public function setColumns(array $cols)
+    public function findAll(array $options = array())
     {
-        $old_cols = static::getColumns();
-        $new_cols = array();
-        foreach ($cols as $col)
-            if (in_array($col, $old_cols))
-                $new_cols[] = $col;
-
-        $this->cols = $new_cols;
+        $this->prepareSelectFrom();
+        
+        if (isset($options['select']))
+            $this->select($options['select']);
+        
+        if (isset($options['where']))
+            $this->where($options['where']);
+        
+        if (isset($options['orderby']))
+            $this->orderBy($options['orderby']);
+        
+        if (isset($options['join']))
+            $this->join ($options['join']);
+        
+        return $this->entitiesFromArray($this->getResults());
     }
     
+    public function findOne(array $options = array())
+    {
+        $this->prepareSelectFrom();
+        
+        if (isset($options['where']))
+            $this->where($options['where']);
+        
+        return $this->entityFromArray($this->getSingleResult());
+    }
+    
+    public function count(array $options = array())
+    {
+        $this->qb->resetQueryParts();
+        $this->qb->setParameters(array());
+        $this->qb->select('count (*) as total')->from($this->getTableName(), $this->getTableAlias());
+        
+        if (isset($options['where']))
+            $this->where($options['where']);
+        
+        $result = $this->getSingleResult();
+        return empty($result) ? 0 : $result['total'];
+    }
+    
+    /**
+     * Returns the current columns to use in SELECT (array format)
+     * @param array $selectedCols Columns selected by developer 
+     * @return array The Columns
+     */
+    public function getColumns(array $selectedCols = array())
+    {
+        if (!empty($selectedCols))
+            $this->setColumns($selectedCols);
+        
+        return $this->cols;
+    }
+    
+    protected function getResults($start = null, $maxResults = null)
+    {
+        if (!empty($start))
+            $this->qb->setFirstResult($start);
+        
+        if (!empty($maxResults))
+            $this->qb->setMaxResults($maxResults);
+        
+        return $this->qb->execute()->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    protected function getSingleResult()
+    {
+        return $this->qb->execute()->fetch(\PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Returns the column based in its index
+     * @param integer $index Index of the column (if using FETCH_NUM)
+     * @return string The Column
+     */
     protected function getColumn($index)
     {
-        $cols = empty($this->cols) ? static::getColumns() : $this->cols;
+        $cols = empty($this->cols) ? $this->getColumns() : $this->cols;
         $col = (array_key_exists($index, $cols)) ? $cols[$index] : $index;
         return $col;
     }
     
-    protected static function getSelectColumns($prefix = null)
+    /**
+     * 
+     * @param string $prefix If to use Table Alias as prefix
+     * @return string Columns to use in SELECT in string format
+     */
+    protected function getSelectColumns($use_prefix = false)
     {
-        $selectedCols = empty($this->cols) ? static::getColumns() : $this->cols;
-        $cols = (!empty($prefix)) ? array_map(function ($value) use ($prefix) {
-            return $prefix.'.'.$value;
-        }, $selectedCols) : $selectedCols;
-        return implode(', ', $cols);
+        $selectedCols = empty($this->cols) ? $this->getColumns() : $this->cols;
+        if ($use_prefix) {
+            $prefix = $this->getTableAlias();
+            $selectedCols = array_map(function ($value) use ($prefix) {
+                return $prefix.'.'.$value;
+            }, $selectedCols);
+        }
+        return implode(', ', $selectedCols);
     }
     
     /**
@@ -55,14 +124,20 @@ abstract class Dao
     protected function prepareSelectFrom(array $append = array())
     {
         $this->qb->resetQueryParts();
+        $this->qb->setParameters(array());
         $this->qb
-             ->select(self::getSelectColumns())
+             ->select($this->getSelectColumns())
              ->from($this->getTableName(), $this->getTableAlias());
         if (!empty($append))
             $this->qb->addSelect(implode(', ', $append));
     }
     
-    protected function entityFromArray(array $values)
+    /**
+     * Returns an Entity from an array
+     * @param mixed $values 
+     * @return \Model\Entity
+     */
+    protected function entityFromArray($values)
     {
         $object = false;
         if (!empty($values))
@@ -74,13 +149,77 @@ abstract class Dao
         return $object;
     }
     
-    protected function entitiesFromArray(array $list)
+    /**
+     * Returns an array of Entities from an array of arrays
+     * @param mixed $list
+     * @return array An array of \Model\Entity
+     */
+    protected function entitiesFromArray($list)
     {
         $objList = array();
         foreach ($list as $values)
             $objList[] = $this->entityFromArray($values);
         
         return $objList;
+    }
+    
+    /**
+     * Constructs the where condition using QueryBuilder
+     * @param string $condition
+     */
+    protected function where($where)
+    {
+        $this->qb->where($where[0]);
+        $this->qb->setParameters($where[1]);
+    }
+    
+    protected function orderBy($orderBy)
+    {
+        foreach ($orderBy as $order)
+            $this->qb->addOrderBy($order[0], $order[1]);
+    }
+    
+    protected function join($joinRules)
+    {
+        $type = isset($joinRules['type']) ? strtolower($joinRules['type']) : '';
+        $method = empty($type) ? 'join' : $type . 'Join';
+        $this->qb->$method($joinRules['from'], $joinRules['to'], $joinRules['condition']);
+        $this->qb->setParameters($joinRules['values']);
+    }
+
+    /**
+     * Returns the original columns of table based on class attributes
+     * @return array Columns for SELECT
+     */
+    private function getOriginalColumns()
+    {
+        $className = \Helper\Text::classNameOnly(get_called_class());
+        $class = 'Model\\' . $className;
+        $reflection = new \ReflectionClass($class);
+        $properties = $reflection->getProperties(\ReflectionProperty::IS_PUBLIC);
+
+        $cols = array();
+        foreach ($properties as $property) {
+            if ($property->getDeclaringClass()->getName() == $class)
+                $cols[] = $property->getName();
+        }
+
+        return $cols;
+    }
+    
+    /**
+     * Sets the columns to use in SELECT
+     * @param array $selectedCols Columns to use
+     */
+    private function setColumns(array $selectedCols)
+    {
+        $old_cols = $this->cols;
+        $new_cols = array();
+        foreach ($selectedCols as $col)
+            if (in_array($col, $old_cols))
+                $new_cols[] = $col;
+
+        $this->cols = $new_cols;
     }
     
 }

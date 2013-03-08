@@ -5,12 +5,12 @@ namespace Model;
 class Usuario extends User
 {
 
-    public $name, $email, $nome_perfil;
+    public $id, $nome, $login, $senha;
     
-    public function __construct()
+    public function __construct($nome = null, $login = null)
     {
-        $this->name = 'Fulano de Tal';
-        $this->email = 'fulano.tal@email.com';
+        if (!empty($name)) $this->nome = $nome;
+        if (!empty($email)) $this->login = $login;
     }
     
     public function __toString()
