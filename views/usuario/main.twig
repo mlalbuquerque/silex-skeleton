@@ -4,7 +4,8 @@
 <h1 style="text-align: center;">USERS</h1>
 <h3 style="text-align: center;">P&aacute;ginas de Usu&aacute;rios</h3>
 <div style="text-align: center; margin-bottom: 20px;"">
-    <a href="/">Homepage</a>
+    <a href="/">Homepage</a> |
+    <a href="/usuario/criar">Novo Usuário</a>
 </div>
 <table>
     <thead>
@@ -26,10 +27,20 @@
                 ---
                 {% endfor %}
             </td>
+            <td>
+                {% for perfil in user.perfis %}
+                {{ perfil.nome }}<br>
+                {% else %}
+                ---
+                {% endfor %}
+            </td>
+            <td>
+                <a href="/usuario/apagar/{{user.id}}">X</a>
+                <a href="/usuario/editar/{{user.id}}">E</a>
+            </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
-TOTAL de usuários: {{total}}<br>
 <h6 style="text-align: center;">by <a href="http://twitter.com/mlalbuquerque">@mlalbuquerque</a></h6>
 {% endblock %}

@@ -13,11 +13,6 @@ class Usuario extends User
         if (!empty($email)) $this->login = $login;
     }
     
-    public function getPrimaryKey()
-    {
-        return $this->id;
-    }
-    
     public function __toString()
     {
         return $this->name;
@@ -34,7 +29,8 @@ class Usuario extends User
                 'class'     => 'Perfil',
                 'attribute' => 'id',
                 'middle'    => 'perfis_do_usuario',
-                'middle_attribute' => 'id_perfil'
+                'middle_attribute' => 'id_perfil',
+                'relation'  => 'id_usuario'
             )
         );
     }

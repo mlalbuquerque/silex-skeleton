@@ -7,19 +7,15 @@ class Perfil extends Entity
     
     public $id, $nome;
     
-    public function getPrimaryKey()
-    {
-        return $this->id;
-    }
-    
     public static function oneToMany()
     {
         return array(
-            'perfis' => array(
+            'usuarios' => array(
                 'class'     => 'Usuario',
                 'attribute' => 'id',
                 'middle'    => 'perfis_do_usuario',
-                'middle_attribute' => 'id_usuario'
+                'middle_attribute' => 'id_usuario',
+                'relation' => 'id_perfil'
             )
         );
     }

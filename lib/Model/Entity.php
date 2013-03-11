@@ -25,7 +25,14 @@ abstract class Entity implements \ArrayAccess
     
     public function getPrimaryKey()
     {
-        return null;
+        return 'id';
+    }
+    
+    public function getPKValue()
+    {
+        $pk = $this->getPrimaryKey();
+        if (empty($this->$pk)) $this->$pk = null;
+        return $this->$pk;
     }
 
     public function offsetExists($offset)

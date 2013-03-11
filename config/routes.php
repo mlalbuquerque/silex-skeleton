@@ -30,5 +30,25 @@ return array(
         'method' => 'GET',
         'route'  => '/usuario',
         'run'    => 'Usuario::main'
+    ),
+    'user.new' => array(
+        'method' => 'GET',
+        'route'  => '/usuario/criar',
+        'run'    => 'Usuario::criar'
+    ),
+    'user.edit' => array(
+        'method' => 'GET',
+        'route'  => '/usuario/editar/{id}',
+        'run'    => 'Usuario::editar'
+    ),
+    'user.delete' => array(
+        'method' => 'GET',
+        'route'  => '/usuario/apagar/{id}',
+        'run'    => 'Usuario::apagar'
+    ),
+    'user.save' => array(
+        'method' => 'POST',
+        'route'  => '/usuario/salvar',
+        'run'    => 'Usuario::salvar'
     )
 );
