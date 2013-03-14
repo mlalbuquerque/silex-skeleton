@@ -20,16 +20,8 @@
  * A "rota.trecho" é o nome da rota (route). Pra usar, deve setar o nome usando o método bind (veja um exemplo em controllers/app.php)
  */
 return array(
-    'allow' => array(
-        'admin'       => 'all',
-        'simple_user' => array(
-            'homepage',
-            'user.main'
-        )
-    ),
-    // É de boa prática liberar o acesso a todas as rotas "auth" para todos
-    // "homepage" só está liberada por motivos de exibição
     'free' => array(
-        'auth.*'
+        'auth.*',
+        'homepage'
     )
 );
