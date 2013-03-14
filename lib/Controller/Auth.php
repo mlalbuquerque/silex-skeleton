@@ -16,19 +16,9 @@ class Auth
     
     public function authenticate(\Silex\Application $app, Request $request)
     {
-        // Modify getUser() method at lib/Auth/Authentication.php
-        $user = $app['auth.login']->getUser();
-        $user->setPermission($request->get('perfil'));
-
-        // Change to test other things
-        if (!empty($user)) {
-            $app['session']->set('user', $user);
-            return $app->redirect('/');
-        } else {
-            return $app['twig']->render('auth/login.twig', array(
-                'error' => 'Login falhou! Tente novamente.'
-            ));
-        }
+        // Modify this method to get info by /login and authenticate the user
+        // Use with \Auth\Athentication::authenticate
+        throw new \Exception('Implement \Controller\Auth::authenticate');
     }
     
     public function logout(\Silex\Application $app)

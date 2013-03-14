@@ -9,6 +9,8 @@ define('HOST', $_SERVER['HTTP_HOST']);
 define('ROOT', __DIR__ . '/..');
 define('WEBROOT', ROOT . '/web');
 define('CONFIGROOT', ROOT . '/config');
+// Pagination contants
+define('PER_PAGE', 10);
 // Attribute name used in log
 define('USERNAME_METHOD_LOGGED', '__toString');
 
@@ -29,6 +31,13 @@ $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
 $app->register(new Silex\Provider\TwigServiceProvider(), array(
     'twig.path' => ROOT . '/views'
 ));
+$app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
+    $twig->addExtension(new \Extensions\Twig\Table($app));
+    $twig->addFunction('table', new \Twig_Function_Method(new \Extensions\Twig\Table($app), 'create', array(
+        'is_safe' => array('html')
+    )));
+    return $twig;
+}));
 
 // Monolog register
 $app->register(new Log\LoggerServiceProvider(), array(
@@ -68,10 +77,10 @@ if ($app['debug'])
 
 // Helper Services
 $app['auth.login'] = $app->share(function ($app) {
-    return new Auth\Authentication($app['session']);
+    return new Auth\Authentication($app);
 });
 $app['auth.permission'] = $app->share(function ($app) {
-    return new Auth\Authorization($app['session']);
+    return new Auth\Authorization($app);
 });
 $app['dao'] = $app->share(function ($app) {
     return new Model\DAO\Engine\DaoLoader($app['db']);

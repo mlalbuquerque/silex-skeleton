@@ -5,11 +5,12 @@ namespace Auth;
 class Authentication
 {
     
-    private $session;
+    private $session, $app;
     
-    public function __construct(\Symfony\Component\HttpFoundation\Session\Session $sessionObject)
+    public function __construct(\Silex\Application $app)
     {
-        $this->session = $sessionObject;
+        $this->session = $app['session'];
+        $this->app = $app;
     }
     
     public function isAuthenticated()
@@ -17,14 +18,10 @@ class Authentication
         return $this->session->has('user');
     }
     
-    // Modify this method to return your session user
-    public function getUser()
+    // Modify this method to authenticate your session user
+    public function authenticate(\Model\User $user)
     {
-        $user = new \Model\Usuario();
-        $user->name = 'John Doe';
-        $user->email = 'john.doe@email.com';
-
-        return $user;
+        throw new \Exception('Implement \Auth\Authentication::authenticate');
     }
     
 }

@@ -5,12 +5,13 @@ namespace Auth;
 class Authorization
 {
     
-    private $session, $paths;
+    private $session, $paths, $app;
     
-    public function __construct(\Symfony\Component\HttpFoundation\Session\Session $sessionObject)
+    public function __construct(\Silex\Application $app)
     {
-        $this->session = $sessionObject;
+        $this->session = $app['session'];
         $this->paths = require_once ROOT . '/config/auth.php';
+        $this->app = $app;
     }
     
     public function freePass($route)

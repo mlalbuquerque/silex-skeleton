@@ -1,5 +1,24 @@
 <?php
 
+/**
+ * You can use the following indexes
+ *   'method'  => HTTP method (GET, POST, PUT, DELETE)
+ *   'route'   => The route that will check (url in the browser).
+ *                Can use formats like these:
+ *                    /
+ *                    /user
+ *                    /user/login
+ *                    /user/{id}
+ *   'run'     => Method the framework will run when route and method checks
+ *   'default' => Default values to route parameters
+ *                    'default' => array(
+ *                        'id' => 10
+ *                    )
+ *   'assert'  => Check something about the parameters
+ *                    'assert' => array(
+ *                        'id' => '\d+'
+ *                    )
+ */
 return array(
     'auth.login' => array(
         'method' => 'GET',
@@ -20,35 +39,5 @@ return array(
         'method' => 'GET',
         'route'  => '/',
         'run'       => 'Homepage::main'
-    ),
-    'admin.main' => array(
-        'method' => 'GET',
-        'route'  => '/admin',
-        'run'    => 'Homepage::admin'
-    ),
-    'user.main' => array(
-        'method' => 'GET',
-        'route'  => '/usuario',
-        'run'    => 'Usuario::main'
-    ),
-    'user.new' => array(
-        'method' => 'GET',
-        'route'  => '/usuario/criar',
-        'run'    => 'Usuario::criar'
-    ),
-    'user.edit' => array(
-        'method' => 'GET',
-        'route'  => '/usuario/editar/{id}',
-        'run'    => 'Usuario::editar'
-    ),
-    'user.delete' => array(
-        'method' => 'GET',
-        'route'  => '/usuario/apagar/{id}',
-        'run'    => 'Usuario::apagar'
-    ),
-    'user.save' => array(
-        'method' => 'POST',
-        'route'  => '/usuario/salvar',
-        'run'    => 'Usuario::salvar'
     )
 );

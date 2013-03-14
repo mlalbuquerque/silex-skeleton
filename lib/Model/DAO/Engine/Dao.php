@@ -92,10 +92,15 @@ abstract class Dao
     {
         $this->qb->resetQueryParts();
         $this->qb->setParameters(array());
+        $this->qb->setFirstResult(0);
+        $this->qb->setMaxResults(1);
         $this->qb->select('count (*) as total')->from($this->getTableName(), $this->getTableAlias());
         
         if (isset($options['where']))
             $this->where($options['where']);
+        
+        if (isset($options['join']))
+            $this->join($options['join']);
         
         $result = $this->getSingleResult();
         return empty($result) ? 0 : $result['total'];

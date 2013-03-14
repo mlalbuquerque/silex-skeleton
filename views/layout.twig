@@ -8,12 +8,6 @@
         {% endblock %}
     </head>
     <body>
-        {% if app.session.get('user') is not null %}
-        <div style="position: absolute; right: 100px; font-family: Verdana, sans-serif;">
-            Usu&aacute;rio: {{ app.session.get('user').name }}
-            ({{ app.session.get('user').profile }})
-        </div>
-        {% endif %}
         <div id="content">
             {% block content %}{% endblock %}
             {% block footer %}{% endblock %}
