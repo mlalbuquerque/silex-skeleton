@@ -37,7 +37,7 @@ abstract class Dao
      *         'table'     => 'TableNameJoined',
      *         'alias'     => 't',
      *         'condition' => 't.col = j.col and t.col = :value',
-     *         'values'    => array('value', 1000)
+     *         'values'    => array('value' => 1000)
      *     )
      *     'start' => 0 (where to begin the pagination)
      *     'max'   => 10 (how many to show on pagination)
@@ -250,7 +250,10 @@ abstract class Dao
     
     protected function select($select)
     {
-        $this->qb->addSelect($select);
+        $alias = $this->getTableAlias();
+        $this->qb->addSelect(array_map(function ($col) use ($alias) {
+            return strpos($col, '.') === false ? $alias . '.' . $col : $col;
+        }, $select));
     }
 
     /**
