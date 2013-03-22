@@ -121,7 +121,14 @@ abstract class Dao
         foreach ($attributes as $attribute)
             $condition[$attribute] = $entity->$attribute;
         
-        if (empty($pkValue)) $this->db->insert($tableName, $condition);
+        $existent = $this->findOne(array(
+            'where' => array(
+                $pk . ' = :pk',
+                array('pk' => $pkValue)
+            )
+        ));
+        
+        if (empty($existent)) $this->db->insert($tableName, $condition);
         else $this->db->update($tableName, $condition, array($pk => $pkValue));
     }
     

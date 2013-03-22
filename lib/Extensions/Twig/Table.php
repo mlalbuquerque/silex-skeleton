@@ -77,16 +77,8 @@ class Table extends \Twig_Extension
         foreach ($entities as $entity)
         {
             $body .= '<tr>';
-            foreach ($attributes as $attribute) {
-                if (is_array($entity->$attribute)) {
-                    $body .= '<td>';
-                    foreach ($entity->$attribute as $value)
-                        $body .= $value . '<br>';
-                    $body .= '</td>';
-                } else {
-                    $body .= '<td>' . $entity->$attribute . '</td>';
-                }
-            }
+            foreach ($attributes as $attribute)
+                $body .= '<td>' . $this->checkType($entity->$attribute) . '</td>';
 
             if (!empty($actions)) {
                 $body .= '<td style="text-align: center;">';
@@ -102,6 +94,20 @@ class Table extends \Twig_Extension
         $body .= '</tbody>';
         
         return $body;
+    }
+    
+    private function checkType($attribute)
+    {
+        $text = '';
+        if (is_array($attribute)) {
+            foreach ($attribute as $value)
+                $text .= $value . '<br>';
+        } elseif (is_bool($attribute)) {
+            $text .= ($attribute) ? 'Sim' : 'Não';
+        } else {
+            $text .= $attribute;
+        }
+        return $text;
     }
     
     private function getPaginator($page, $perPage, $total, $httpMethod, $route)
