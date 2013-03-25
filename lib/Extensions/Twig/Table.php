@@ -85,7 +85,7 @@ class Table extends \Twig_Extension
                 if (isset($actions['edit']))
                     $body .= '<a href="' . str_replace('?', $entity->getPKValue(), $actions['edit']) . '"><img src="/images/edit.png" /></a>&nbsp;&nbsp;&nbsp;';
                 if (isset($actions['delete']))
-                    $body .= '<a href="' . str_replace('?', $entity->getPKValue(), $actions['delete']) . '"><img src="/images/delete.png" /></a>';
+                    $body .= '<a onclick="if (!confirm(\'Tem certeza?\')) return false;" href="' . str_replace('?', $entity->getPKValue(), $actions['delete']) . '"><img src="/images/delete.png" /></a>';
                 $body .= '</td>';
             }
 
