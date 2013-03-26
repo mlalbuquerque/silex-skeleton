@@ -17,7 +17,19 @@ abstract class Entity implements \ArrayAccess
                 $this->foreignAttributes[$attribute] = $value;
             }
     }
-    
+
+    /**
+     * Shows the ONE-TO-MANY relations
+     * @return array An array with the ONE-TO-MANY relations
+     * Ex.: 'other_table' => array(
+     *          'attribute'        => 'other_table attribute name',
+     *          'middle'           => 'middle table',
+     *          'middle_attribute' => 'middle table column',
+     *          'relation'         => 'entity table column',
+     *          'class'            => 'Entity representing table'
+     *      )
+     * 'middle', 'middle_attribute' and 'relation' ONLY IF it's a MANY-TO-MANY relation
+     */
     public static function oneToMany()
     {
         return array();
@@ -31,8 +43,15 @@ abstract class Entity implements \ArrayAccess
     public function getPKValue()
     {
         $pk = $this->getPrimaryKey();
-        if (empty($this->$pk)) $this->$pk = null;
-        return $this->$pk;
+        if (is_array($pk)) {
+            $pks = array();
+            foreach ($pk as $attr)
+                $pks[] = $this->$attr;
+            return $pks;
+        } else {
+            if (empty($this->$pk)) $this->$pk = null;
+            return $this->$pk;
+        }
     }
 
     public function offsetExists($offset)

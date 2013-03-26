@@ -121,15 +121,35 @@ abstract class Dao
         foreach ($attributes as $attribute)
             $condition[$attribute] = $entity->$attribute;
         
+        $cond = array();
+        $parameters = array();
+        if (is_array($pk)) {
+            for ($i = 0; $i < count($pk); $i++) {
+                $cond[] = $pk[$i] . ' = :pk' . $i;
+                $parameters['pk' . $i] = $pkValue[$i];
+            }
+        } else {
+            $cond = array($pk . ' = :pk');
+            $parameters = array('pk' => $pkValue);
+        }
         $existent = $this->findOne(array(
             'where' => array(
-                $pk . ' = :pk',
-                array('pk' => $pkValue)
+                implode(' AND ', $cond),
+                $parameters
             )
         ));
         
         if (empty($existent)) $this->db->insert($tableName, $condition);
-        else $this->db->update($tableName, $condition, array($pk => $pkValue));
+        else {
+            $cond = array();
+            if (is_array($pk)) {
+                for ($i = 0; i < count($pk); $i++)
+                    $cond[$pk[$i]] = $pkValue[$i];
+            } else {
+                $cond[$pk] = $pkValue;
+            }
+            $this->db->update($tableName, $condition, $cond);
+        }
     }
     
     public function delete(\Model\Entity $entity)
@@ -146,7 +166,19 @@ abstract class Dao
         if (empty($pkValue))
             throw new \Exception('Tentou excluir uma Entity "' . $entityClass . '" que não existe!');
         
-        $this->db->delete($tableName, array($pk => $pkValue));
+        $condition = array();
+        if (is_array($pk)) {
+            for ($i = 0; i < count($pk); $i++)
+                $condition[$pk[$i]] = $pkValue[$i];
+        } else {
+            $condition[$pk] = $pkValue;
+        }
+        $this->db->delete($tableName, $condition);
+    }
+    
+    public function deleteMany(array $condition)
+    {
+        $this->db->delete($this->getTableName(), $condition);
     }
     
     /**
