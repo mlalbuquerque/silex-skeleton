@@ -66,4 +66,10 @@ class Bo
         return implode($separator, $fields);
     }
     
+    public function throwError($error, $separator = '<br/>')
+    {
+        if (!empty($error))
+            throw new \Exception(implode($separator, $error));
+    }
+    
 }
