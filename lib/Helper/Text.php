@@ -31,6 +31,16 @@ class Text {
         ));
     }
     
+    public static function generateAttribute($text)
+    {
+        return strtr(strtolower(str_replace(' ', '_', $text)), array(
+            '!' => '',
+            '?' => '',
+            '@' => '',
+            '%' => ''
+        ));
+    }
+    
     public static function sanitizeAttributeName($text)
     {
         return str_replace('-', '_', $text);
