@@ -17,6 +17,10 @@ define('USERNAME_METHOD_LOGGED', '__toString');
 // New libs bootstraping and register
 $loader = require_once __DIR__.'/../vendor/autoload.php';
 
+// MongoDB Connection String
+// Uncomment if you're going to use MongoDB
+//define('__MONGO_CONN__', Helper\Text::MongoStringConnection(require_once ROOT . '/config/mongo.php'));
+
 // Starting the engines and debugging
 $app = new Silex\Application();
 $app['debug'] = true;

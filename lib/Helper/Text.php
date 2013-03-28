@@ -36,4 +36,35 @@ class Text {
         return str_replace('-', '_', $text);
     }
     
+    public static function MongoStringConnection(array $params)
+    {
+        $hosts = array();
+        $host = 'localhost';
+        $port = 27017;
+        for ($i = 0; $i < count($params['hosts']); $i++)
+        {
+            if (!empty($params['hosts']) && !empty($params['hosts'][$i]))
+                $host = $params['hosts'][$i] . ':';
+
+            if (!empty($params['ports']) && !empty($params['ports'][$i]))
+            {
+                $host .= $params['ports'][$i];
+                $port = $params['ports'][$i];
+            }
+            else
+                $host .= $port;
+
+            $hosts[] = $host;
+        }
+        
+        $user = '';
+        if (!empty($params['password'])) $user .= ':' . $params['password'];
+        if (!empty($params['username'])) $user = $params['username'] . $user . '@';
+        
+        $db = '';
+        if (!empty($params['database'])) $db .= '/' . $params['database'];
+        
+        return 'mongodb://' . $user . implode(',', $hosts) . $db;
+    }
+    
 }
