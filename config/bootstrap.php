@@ -135,4 +135,6 @@ $app->error(function(\Exception $e, $code) use ($app) {
         ));
 });
 
+Symfony\Component\HttpFoundation\Request::enableHttpMethodParameterOverride();
+
 return $app;
