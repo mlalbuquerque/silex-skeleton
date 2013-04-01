@@ -2,7 +2,11 @@
 
 namespace Helper;
 
-class Text {
+class Text
+{
+    
+    const EOL = "\r\n";
+    const DOUBLE_EOL = "\r\n\r\n";
 
     public static function classNameOnly($class)
     {
