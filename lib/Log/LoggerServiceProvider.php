@@ -21,9 +21,10 @@ class LoggerServiceProvider extends \Silex\Provider\MonologServiceProvider
             {
                 $user = $app['session']->get('user');
                 $method = USERNAME_METHOD_LOGGED;
-                $name = $user->$method();
-                if (property_exists($method, $user) && !empty($name))
-                    $log .= $name;
+                if (property_exists($method, $user)) {
+                    $name = $user->$method();
+                    if (!empty($name)) $log .= $name;
+                }
             }
             if (!empty($routeName))
                 $log .= ' está acessando a rota "' . $routeName . '" (' . $route . ')';
