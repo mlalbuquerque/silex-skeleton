@@ -7,7 +7,7 @@ class DaoLoader implements \ArrayAccess
     
     private $db, $container;
     
-    public function __construct(\Doctrine\DBAL\Connection $db)
+    public function __construct(\Pimple $db)
     {
         $this->db = $db;
         $this->container = array();

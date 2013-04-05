@@ -2,25 +2,52 @@
 
 namespace Model\DAO\Engine;
 
-abstract class Dao
+abstract class Dao implements \ArrayAccess
 {
     
     protected $db, $qb, $cols;
 
-    public function __construct(\Doctrine\DBAL\Connection $db)
+    public function __construct(\Pimple $dbs)
     {
-        $this->db = $db;
-        $this->qb = $db->createQueryBuilder();
+        $this->dbs = $dbs;
+        $this->db = reset(reset($dbs));
+        $this->qb = $this->db->createQueryBuilder();
         $this->cols = $this->getOriginalColumns();
     }
 
     abstract protected function getTableName();
     abstract protected function getTableAlias();
-    
+
+    public function offsetExists($index)
+    {
+        return isset($this->db[$index]);
+    }
+
+    public function offsetGet($index)
+    {
+        $this->db = $this->dbs[$index];
+        $this->qb = $this->db->createQueryBuilder();
+        return $this;
+    }
+
+    public function offsetSet($index, $value)
+    {
+        return;
+    }
+
+    public function offsetUnset($index)
+    {
+        return;
+    }
+
     /**
      * 
      * @param array $options Options can be:
      *     'select' => array('col1', 'col2', ..., 'coln')
+     *     Select can use alias:
+     *     'select' => array('col1 as COLA', 'col2 as COLB')
+     *     Select can use aggragate functions
+     *     'select' => array('avg(col1) as mean', 'max(col2) as maximum)
      *     'where' => array(
      *         'name LIKE :search AND date = :today',
      *         array(
@@ -31,6 +58,13 @@ abstract class Dao
      *     'orderby' => array(
      *         array('col1', 'ASC'),
      *         array('col2', 'DESC'),
+     *     )
+     *     'groupby' => array('col1', 'col2', ..., 'coln')
+     *     'having' => array(
+     *         'col3 > :value AND col10 > avg(col3)',
+     *         array(
+     *             'value' => 1000
+     *         )
      *     )
      *     'join' => array(
      *         'type'      => 'inner', // left, right, (it's optional)
@@ -59,6 +93,12 @@ abstract class Dao
         
         if (isset($options['join']))
             $this->join($options['join']);
+        
+        if (isset($options['groupby']))
+            $this->groupBy($options['groupby']);
+        
+        if (isset($options['having']))
+            $this->having($options['having']);
         
         $start = isset($options['start']) ? $options['start'] : null;
         $max = isset($options['max']) ? $options['max'] : null;
@@ -201,7 +241,7 @@ abstract class Dao
         
         if (!empty($maxResults))
             $this->qb->setMaxResults($maxResults);
-        
+
         return $this->qb->execute()->fetchAll(\PDO::FETCH_ASSOC);
     }
 
@@ -309,6 +349,18 @@ abstract class Dao
     {
         foreach ($orderBy as $order)
             $this->qb->addOrderBy($order[0], $order[1]);
+    }
+    
+    protected function groupBy($groupBy)
+    {
+        foreach ($groupBy as $group)
+            $this->qb->addGroupBy($group);
+    }
+    
+    protected function having($having)
+    {
+        $this->qb->having($having[0]);
+        $this->qb->setParameters($having[1]);
     }
     
     protected function join($joinRules)

@@ -28,7 +28,7 @@ date_default_timezone_set('America/Sao_Paulo'); // Your default Timezone
 
 // Doctrine register
 $app->register(new Silex\Provider\DoctrineServiceProvider(), array(
-    'db.options' => require_once ROOT . '/config/database.php'
+    'dbs.options' => require_once ROOT . '/config/databases.php'
 ));
 
 // Twig register
@@ -58,21 +58,27 @@ $app->register(new Log\LoggerServiceProvider(), array(
 // Browser info
 if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
 {
+    $browser = array();
     preg_match('#(?P<name>Firefox|Chrome)/(?P<version>\d+.\d+)#', $_SERVER['HTTP_USER_AGENT'], $browser);
     $app['browser.name'] = strtolower($browser['name']);
+    $app['browser.version'] = strtolower($browser['version']);
 }
 
 // Browser Log register
 if ($app['debug'])
 {
-    if ($app['browser.name'] == 'firefox')
-        $handler = new Monolog\Handler\FirePHPHandler();
-    elseif($app['browser.name'] == 'chrome')
-        $handler = new Monolog\Handler\ChromePHPHandler();
-    else
-        $handler = null;
+    switch($app['browser.name']) {
+        case 'firefox':
+            $handler = new Monolog\Handler\FirePHPHandler();
+            break;
+        case 'chrome':
+            $handler = new Monolog\Handler\ChromePHPHandler();
+            break;
+        default:
+            $handler = null;
+    }
 
-    $app['monolog'] = $app->share($app->extend('monolog', function ($monolog, $app) use ($handler) {
+    $app['monolog'] = $app->share($app->extend('monolog', function ($monolog) use ($handler) {
         if ($handler)
             $monolog->pushHandler($handler);
         return $monolog;
@@ -87,7 +93,7 @@ $app['auth.permission'] = $app->share(function ($app) {
     return new Auth\Authorization($app);
 });
 $app['dao'] = $app->share(function ($app) {
-    return new Model\DAO\Engine\DaoLoader($app['db']);
+    return new Model\DAO\Engine\DaoLoader($app['dbs']);
 });
 $app['bo'] = $app->share(function ($app) {
     return new BO\Engine\BoLoader($app['dao']);
@@ -135,6 +141,7 @@ $app->error(function(\Exception $e, $code) use ($app) {
         ));
 });
 
-Symfony\Component\HttpFoundation\Request::enableHttpMethodParameterOverride();
+if (method_exists('Symfony\Component\HttpFoundation\Request', 'enableHttpMethodParameterOverride'))
+    Symfony\Component\HttpFoundation\Request::enableHttpMethodParameterOverride();
 
 return $app;
