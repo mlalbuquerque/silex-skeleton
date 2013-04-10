@@ -67,11 +67,17 @@ abstract class Dao implements \ArrayAccess
      *         )
      *     )
      *     'join' => array(
-     *         'type'      => 'inner', // left, right, (it's optional)
-     *         'table'     => 'TableNameJoined',
-     *         'alias'     => 't',
-     *         'condition' => 't.col = j.col and t.col = :value',
-     *         'values'    => array('value' => 1000)
+     *         'TableNameJoined' => array(
+     *             'type'      => 'inner', // left, right, (it's optional)
+     *             'alias'     => 't',
+     *             'condition' => 't.col = j.col and t.col = :value',
+     *             'values'    => array('value' => 1000)
+     *         ),
+     *         'SecondTable' => array(
+     *             'type'      => 'left',
+     *             'alias'     => 's',
+     *             'condition' => 's.id = id_second_table'
+     *         )
      *     )
      *     'start' => 0 (where to begin the pagination)
      *     'max'   => 10 (how many to show on pagination)
@@ -365,11 +371,13 @@ abstract class Dao implements \ArrayAccess
     
     protected function join($joinRules)
     {
-        $type = isset($joinRules['type']) ? strtolower($joinRules['type']) : '';
-        $method = empty($type) ? 'join' : $type . 'Join';
-        $this->qb->$method($this->getTableAlias(), $joinRules['table'], $joinRules['alias'], $joinRules['condition']);
-        if (isset($joinRules['values']))
-            $this->qb->setParameters($joinRules['values']);
+        foreach ($joinRules as $table => $joinRule) {
+            $type = isset($joinRule['type']) ? strtolower($joinRule['type']) : '';
+            $method = empty($type) ? 'join' : $type . 'Join';
+            $this->qb->$method($this->getTableAlias(), $table, $joinRule['alias'], $joinRule['condition']);
+            if (isset($joinRule['values']))
+                $this->qb->setParameters($joinRule['values']);
+        }
     }
 
     /**
