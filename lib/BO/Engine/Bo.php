@@ -68,8 +68,20 @@ class Bo
     
     public function throwError($error, $separator = '<br/>')
     {
-        if (!empty($error))
-            throw new \Exception(implode($separator, $error));
+        if (!empty($error)) {
+            $message = '';
+            switch ($type) {
+                case self::LINE_BREAK:
+                    $message .= implode('<br/>', $error);
+                    break;
+                case self::LISTING:
+                    $message .= '<ol>';
+                    foreach ($error as $e)
+                        $message .= '<li>' . $e . '</li>';
+                    $message .= '</ol>';
+            }
+            throw new \Exception($message);
+        }
     }
     
 }
