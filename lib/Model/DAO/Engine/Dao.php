@@ -142,6 +142,9 @@ abstract class Dao implements \ArrayAccess
         $this->qb->setMaxResults(1);
         $this->qb->select('COUNT(*) as total')->from($this->getTableName(), $this->getTableAlias());
         
+        if (isset($options['select']))
+            $this->select($options['select']);
+        
         if (isset($options['where']))
             $this->where($options['where']);
         
