@@ -138,18 +138,21 @@ abstract class Dao implements \ArrayAccess
     {
         $this->qb->resetQueryParts();
         $this->qb->setParameters(array());
-        $this->qb->setFirstResult(0);
-        $this->qb->setMaxResults(1);
-        $this->qb->select('COUNT(*) as total')->from($this->getTableName(), $this->getTableAlias());
         
-        if (isset($options['select']))
-            $this->select($options['select']);
+        $select = isset($options['select']) ?
+                implode(', ', $options['select']) :
+                '*';
         
         if (isset($options['where']))
             $this->where($options['where']);
         
         if (isset($options['join']))
             $this->join($options['join']);
+        
+        $this->qb->setFirstResult(0);
+        $this->qb->setMaxResults(1);
+        $this->qb->addSelect('COUNT(' . $select . ') as total')
+                 ->from($this->getTableName(), $this->getTableAlias());
         
         $result = $this->getSingleResult();
         return empty($result) ? 0 : $result['total'];
