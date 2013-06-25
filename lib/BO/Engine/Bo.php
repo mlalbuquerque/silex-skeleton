@@ -8,6 +8,9 @@ use Model\DAO\Engine\DaoLoader;
 class Bo
 {
     
+    const ERR_SEPARATOR_LINE_BREAK = 0,
+          ERR_SEPARATOR_LISTING = 1;
+    
     protected $loadBO, $dao, $labels;
 
     public function __construct(BoLoader $bo_loader, DaoLoader $dao_loader)
@@ -66,15 +69,15 @@ class Bo
         return implode($separator, $fields);
     }
     
-    public function throwError($error, $separator = '<br/>')
+    public function throwError($error, $separator_type = self::ERR_SEPARATOR_LINE_BREAK)
     {
         if (!empty($error)) {
             $message = '';
-            switch ($type) {
-                case self::LINE_BREAK:
+            switch ($separator_type) {
+                case self::ERR_SEPARATOR_LINE_BREAK:
                     $message .= implode('<br/>', $error);
                     break;
-                case self::LISTING:
+                case self::ERR_SEPARATOR_LISTING:
                     $message .= '<ol>';
                     foreach ($error as $e)
                         $message .= '<li>' . $e . '</li>';

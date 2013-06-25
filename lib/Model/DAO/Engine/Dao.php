@@ -246,6 +246,21 @@ abstract class Dao implements \ArrayAccess
         return $this->cols;
     }
     
+    public function beginTransaction()
+    {
+        $this->db->beginTransaction();
+    }
+    
+    public function commit()
+    {
+        $this->db->commit();
+    }
+
+    public function rollback()
+    {
+        $this->db->rollback();
+    }
+    
     protected function getResults($start = null, $maxResults = null)
     {
         if (!empty($start))
