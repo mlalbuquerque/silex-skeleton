@@ -43,18 +43,6 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
     return $twig;
 }));
 
-// Monolog register
-$app->register(new Log\LoggerServiceProvider(), array(
-    'monolog.name'    => APP_NAME,
-    'monolog.level'   => $app['debug'] ? \Monolog\Logger::DEBUG : \Monolog\Logger::INFO,
-    'monolog.logfile' => ROOT . '/log/silex.log',
-    'monolog.maxfiles' => 30,
-    'monolog.handler' => function () use ($app) {
-        // For other classes see https://github.com/Seldaek/monolog#handlers
-        return new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.maxfiles'], $app['monolog.level']);
-    }
-));
-
 // Browser info
 if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
 {
@@ -64,26 +52,30 @@ if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
     $app['browser.version'] = strtolower($browser['version']);
 }
 
-// Browser Log register
-if ($app['debug'])
-{
-    switch($app['browser.name']) {
-        case 'firefox':
-            $handler = new Monolog\Handler\FirePHPHandler();
-            break;
-        case 'chrome':
-            $handler = new Monolog\Handler\ChromePHPHandler();
-            break;
-        default:
-            $handler = null;
+// Monolog register
+$app->register(new Log\LoggerServiceProvider(), array(
+    'monolog.name'    => APP_NAME,
+    'monolog.level'   => $app['debug'] ? \Monolog\Logger::DEBUG : \Monolog\Logger::INFO,
+    'monolog.logfile' => ROOT . '/log/silex.log',
+    'monolog.maxfiles' => 30,
+    'monolog.handler' => function () use ($app) {
+        // For other classes see https://github.com/Seldaek/monolog#handlers
+        $handler = null;
+        if ($app['debug']) {
+            switch($app['browser.name']) {
+                case 'firefox':
+                    $handler = new Monolog\Handler\FirePHPHandler();
+                    break;
+                case 'chrome':
+                    $handler = new Monolog\Handler\ChromePHPHandler();
+                    break;
+            }
+        } else {
+            $handler = new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.maxfiles'], $app['monolog.level']);
+        }
+        return $handler;
     }
-
-    $app['monolog'] = $app->share($app->extend('monolog', function ($monolog) use ($handler) {
-        if ($handler)
-            $monolog->pushHandler($handler);
-        return $monolog;
-    }));
-}
+));
 
 // Helper Services
 $app['auth.login'] = $app->share(function ($app) {
