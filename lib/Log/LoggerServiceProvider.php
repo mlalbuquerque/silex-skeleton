@@ -21,7 +21,7 @@ class LoggerServiceProvider extends \Silex\Provider\MonologServiceProvider
             {
                 $user = $app['session']->get('user');
                 $method = USERNAME_METHOD_LOGGED;
-                if (property_exists($method, $user)) {
+                if (is_callable(array($user, $method))) {
                     $name = $user->$method();
                     if (!empty($name)) $log .= $name;
                 }
