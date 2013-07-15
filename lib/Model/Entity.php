@@ -76,10 +76,8 @@ abstract class Entity implements \ArrayAccess
     
     public function __get($attribute)
     {
-        if (property_exists($this, $attribute))
-            return $this->$attribute;
-        else
-            return $this[$attribute];
+        return property_exists($this, $attribute) ?
+            $this->$attribute : $this[$attribute];
     }
     
     public function __set($attribute, $value)
@@ -88,6 +86,20 @@ abstract class Entity implements \ArrayAccess
             $this->$attribute = $value;
         else
             $this[$attribute] = $value;
+    }
+    
+    public function __isset($attribute)
+    {
+        return property_exists($this, $attribute) ?
+            isset($this->$attribute) : isset($this[$attribute]);
+    }
+    
+    public function __unset($attribute)
+    {
+        if (property_exists($this, $attribute))
+            unset($this->$attribute);
+        else
+            unset($this[$attribute]);
     }
 
 
