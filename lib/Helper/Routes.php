@@ -9,8 +9,8 @@ class Routes
     {
         $routesRules = include CONFIGROOT . '/routes.php';
         foreach ($routesRules as $name => $rule) {
-            $method = strtolower($rule['method']);
-            $route = $app->$method($rule['route'], 'Controller\\' . $rule['run'])->bind($name);
+            $method = strtoupper($rule['method']);
+            $route = $app->match($rule['route'], 'Controller\\' . $rule['run'])->bind($name)->method($method);
             if (isset($rule['default']))
                 foreach ($rule['default'] as $var => $value)
                     $route->value($var, $value);
