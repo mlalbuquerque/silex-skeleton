@@ -39,10 +39,11 @@ class Table extends \Twig_Extension
         } else
             $cols = $attributes;
         $actions = isset($options['actions']) ? $options['actions'] : array();
+        $modifiers = isset($options['modifiers']) ? $options['modifiers'] : array();
         
         $table = '<table class="' . $class . '">';
         $table .= $this->getTableHeader($cols, count($attributes), isset($options['actions']));
-        $table .= $this->getTableBody($attributes, $entities, $actions);
+        $table .= $this->getTableBody($attributes, $entities, $actions, $modifiers);
         $table .= '</table>';
         
         $perPage = empty($options['perPage']) ? PER_PAGE : $options['perPage'];
@@ -71,14 +72,21 @@ class Table extends \Twig_Extension
         return $header;
     }
     
-    private function getTableBody(array $attributes, array $entities, array $actions)
+    private function getTableBody(array $attributes, array $entities, array $actions, array $modifiers)
     {
         $body = '<tbody>';
         foreach ($entities as $entity)
         {
             $body .= '<tr>';
-            foreach ($attributes as $attribute)
-                $body .= '<td>' . $this->checkType($entity->$attribute) . '</td>';
+            for($i = 0; $i < count($attributes); $i++) {
+                $attribute = $attributes[$i];
+                $value = $this->checkType($entity->$attribute);
+                if (isset($modifiers[$i])) {
+                    $function = $modifiers[$i];
+                    $value = $function($value, $entity);
+                }
+                $body .= '<td>' . $value . '</td>';
+            }
 
             if (!empty($actions)) {
                 $body .= '<td style="text-align: center;">';
