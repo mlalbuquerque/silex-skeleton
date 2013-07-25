@@ -7,6 +7,11 @@ class Text
     
     const EOL = "\r\n";
     const DOUBLE_EOL = "\r\n\r\n";
+    
+    public static function isJson($string) {
+        json_decode($string);
+        return (json_last_error() == JSON_ERROR_NONE);
+    }
 
     public static function classNameOnly($class)
     {
