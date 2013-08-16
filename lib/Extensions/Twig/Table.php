@@ -21,11 +21,30 @@ class Table extends \Twig_Extension
      * @param array $options You can set:
      *          'class' => CSS class to use in table
      *          'cols' => Array with the column's labels
-     *          'actions' => Array pointing the URL for edit and delete. Replaces '?' with PK
-     *              Ex.: 'actions' => array(
-     *                       'edit' => '/user/edit/?',
-     *                       'delete' => '/user/delete/?'
+     *          'modifiers' => Array with callbacks to modify the return value of some column.
+     *              Ex.: 'modifiers' => array(
+     *                       2 => function ($value, $entity) { // you can use the column 'value' and you get the 'entity' if you want to use it
+     *                           return md5($value); // must return scalar value
+     *                       }
      *                   )
+     *          'actions' => Array pointing the URL for edit and delete. You can mix the examples
+     *              Ex.1: 'actions' => array(
+     *                        'edit' => '/user/edit/?', // It will replace '?' by PK value
+     *                        'delete' => '/user/delete/?'
+     *                    )
+     *              Ex.2: 'actions' => array(
+     *                        'edit' => '/link/edit/{id}', // It will use entity's 'id' attribute to replace
+     *                        'delete' => '/link/delete/{id}/{name}' // Can use as many attributes as you want
+     *                    )
+     *              Ex.3: 'actions' => array(
+     *                        'edit' => array(
+     *                            'url' => '/link/edit/{id}'
+     *                        ),
+     *                        'delete' => array(
+     *                            'url' => '/link/delete/{id}/{name}',
+     *                            'msg' => 'Are you sure you want to delete this item?'
+     *                        )
+     *                    )
      * @return string HTML for Table with Pagination
      */
     public function create(array $entities, array $attributes, $total, $page = 0, array $options = array())
@@ -90,10 +109,8 @@ class Table extends \Twig_Extension
 
             if (!empty($actions)) {
                 $body .= '<td style="text-align: center;">';
-                if (isset($actions['edit']))
-                    $body .= '<a href="' . str_replace('?', $entity->getPKValue(), $actions['edit']) . '"><img src="/images/edit.png" /></a>&nbsp;&nbsp;&nbsp;';
-                if (isset($actions['delete']))
-                    $body .= '<a onclick="if (!confirm(\'Tem certeza?\')) return false;" href="' . str_replace('?', $entity->getPKValue(), $actions['delete']) . '"><img src="/images/delete.png" /></a>';
+                $body .= isset($actions['edit']) ? $this->linkToEdit($entity, $actions['edit']) . '&nbsp;' : '';
+                $body .= isset($actions['delete']) ? $this->linkToDelete($entity, $actions['delete']) . '&nbsp;' : '';
                 $body .= '</td>';
             }
 
@@ -102,6 +119,56 @@ class Table extends \Twig_Extension
         $body .= '</tbody>';
         
         return $body;
+    }
+    
+    private function linkToEdit(\Model\Entity $entity, $rules)
+    {
+        $link = '';
+        $parts = array();
+        $href = is_array($rules) ? $rules['url'] : $rules;
+        if (preg_match_all('/\{(\w+)\}/', $href, $parts)) {
+            $link = $this->getLink('edit', $parts[0], array($entity, $parts[1]), $rules);
+        } else {
+            $link = $this->getLink('edit', '?', $entity->getPKValue(), $rules);
+        }
+        return $link;
+    }
+    
+    private function linkToDelete(\Model\Entity $entity, $rules)
+    {
+        $link = '';
+        $parts = array();
+        $href = is_array($rules) ? $rules['url'] : $rules;
+        if (preg_match_all('/\{(\w+)\}/', $href, $parts)) {
+            $link = $this->getLink('delete', $parts[0], array($entity, $parts[1]), $rules);
+        } else {
+            $link = $this->getLink('delete', '?', $entity->getPKValue(), $rules);
+        }
+        return $link;
+    }
+    
+    private function getLink($type, $search, $replace, $rules)
+    {
+        $linkTmp = $type == 'edit' ?
+                '<a title="Editar" href="[LINK]"><img src="/images/edit.png" /></a>' :
+                '<a title="Excluir" onclick="if (!confirm(\'[MSG]\')) return false;" href="[LINK]"><img src="/images/delete.png" /></a>';
+        $link = '';
+        $url = is_array($rules) ? $rules['url'] : $rules;
+        if (is_array($search)) {
+            $entity = $replace[0];
+            for ($i = 0; $i < count($search); $i++) {
+                $method = $replace[1][$i];
+                $url = str_replace($search[$i], $entity->$method, $url);
+            }
+            $link = str_replace('[LINK]', $url, $linkTmp);
+        } else {
+            $href = str_replace($search, $replace, $url);
+            $link = str_replace('[LINK]', $href, $linkTmp);
+        }
+        
+        return ($type == 'delete' && is_array($rules)) ? 
+                str_replace('[MSG]', $rules['msg'], $link) :
+                str_replace('[MSG]', 'Tem certeza que deseja excluir este item?', $link);
     }
     
     private function checkType($attribute)
