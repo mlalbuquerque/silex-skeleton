@@ -17,7 +17,9 @@ td, th {
 }
 
 .table-paginator {
+    margin: 0 auto;
     text-align: center;
+    width: 100px;
 }
 
 .table-next, .table-previous {
