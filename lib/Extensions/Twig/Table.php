@@ -108,7 +108,7 @@ class Table extends \Twig_Extension
             }
 
             if (!empty($actions)) {
-                $body .= '<td style="text-align: center;">';
+                $body .= '<td class="table-actions">';
                 $body .= isset($actions['edit']) ? $this->linkToEdit($entity, $actions['edit']) . '&nbsp;' : '';
                 $body .= isset($actions['delete']) ? $this->linkToDelete($entity, $actions['delete']) . '&nbsp;' : '';
                 $body .= '</td>';

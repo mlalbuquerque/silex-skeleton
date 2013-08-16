@@ -12,6 +12,10 @@ td, th {
     padding: 4px;
 }
 
+.table-actions {
+    text-align: center;
+}
+
 h1.error {
     color: #116295;
     font-family: Verdana, sans-serif;
