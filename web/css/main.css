@@ -16,6 +16,25 @@ td, th {
     text-align: center;
 }
 
+.table-paginator {
+    text-align: center;
+}
+
+.table-next, .table-previous {
+    background-color: #116295;
+    border: 2px #0E4B71 solid;
+    border-radius: 4px;
+    color: white;
+    font-weight: bold;
+    padding: 0 6px;
+    text-decoration: none;
+}
+
+.table-next:hover, .table-previous:hover {
+    background-color: white;
+    color: #116295;
+}
+
 h1.error {
     color: #116295;
     font-family: Verdana, sans-serif;

@@ -193,15 +193,15 @@ class Table extends \Twig_Extension
         $urlPrev = $page - 1 <= 0 ? str_replace('/{page}', '', $urlPattern) : str_replace('{page}', ($page - 1), $urlPattern);
         $totalPages = ceil($total / $perPage);
         
-        $paginator = '<div style="text-align: center;">';
+        $paginator = '<div class="table-paginator">';
         if (strtoupper($httpMethod) === 'GET') {
-            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a href="' . $urlNext . '">&rarr;</a>';
-            $previous = $page - 1 < 0 ? '&larr;' : '<a href="' . $urlPrev . '">&larr;</a>';
+            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" href="' . $urlNext . '">&rarr;</a>';
+            $previous = $page - 1 < 0 ? '&larr;' : '<a class="table-previous" href="' . $urlPrev . '">&larr;</a>';
             $paginator .= $previous . ' | ' . $next;
         } elseif (strtoupper($httpMethod) === 'POST') {
             $params = $this->app['request']->request->all();
-            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a id="link-next" href="' . $urlNext . '">&rarr;</a>';
-            $previous = $page - 1 < 0 ? '&larr;' : '<a id="link-prev" href="' . $urlPrev . '">&larr;</a>';
+            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" id="link-next" href="' . $urlNext . '">&rarr;</a>';
+            $previous = $page - 1 < 0 ? '&larr;' : '<a class="table-previous" id="link-prev" href="' . $urlPrev . '">&larr;</a>';
             $paginator .= $previous . ' | ' . $next;
             $paginator .= '<form id="formPagination" action="" method="post">';
             foreach ($params as $param => $value) {
