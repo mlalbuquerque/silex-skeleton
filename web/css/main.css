@@ -37,6 +37,14 @@ td, th {
     color: #116295;
 }
 
+.table-actual-page {
+    font-size: 1.2em;
+    font-weight: bold;
+    border: 2px #0E4B71 solid;
+    border-radius: 4px;
+    padding: 0 6px;
+}
+
 h1.error {
     color: #116295;
     font-family: Verdana, sans-serif;

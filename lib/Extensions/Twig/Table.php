@@ -192,17 +192,23 @@ class Table extends \Twig_Extension
         $urlNext = str_replace('{page}', ($page + 1), $urlPattern);
         $urlPrev = $page - 1 <= 0 ? str_replace('/{page}', '', $urlPattern) : str_replace('{page}', ($page - 1), $urlPattern);
         $totalPages = ceil($total / $perPage);
+        $urlFirst = str_replace('/{page}', '', $urlPattern);
+        $urlLast = str_replace('{page}', ($totalPages - 1), $urlPattern);
+        
+        $first = '<a class="table-previous" href="' . $urlFirst . '">&laquo;</a>&nbsp;';
+        $last = '&nbsp;<a class="table-next" href="' . $urlLast . '">&raquo;</a>';
+        $middle = $this->getMiddlePages($page, $totalPages, $urlPattern);
         
         $paginator = '<div class="table-paginator">';
         if (strtoupper($httpMethod) === 'GET') {
-            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" href="' . $urlNext . '">&rarr;</a>';
-            $previous = $page - 1 < 0 ? '&larr;' : '<a class="table-previous" href="' . $urlPrev . '">&larr;</a>';
-            $paginator .= $previous . ' | ' . $next;
+            $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
+            $previous = '&nbsp;' . ($page - 1 < 0 ? '&larr;' : '<a class="table-previous" href="' . $urlPrev . '">&larr;</a>') . '&nbsp;';
+            $paginator .= $first . $previous . $middle . $next . $last;
         } elseif (strtoupper($httpMethod) === 'POST') {
             $params = $this->app['request']->request->all();
-            $next = $page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" id="link-next" href="' . $urlNext . '">&rarr;</a>';
-            $previous = $page - 1 < 0 ? '&larr;' : '<a class="table-previous" id="link-prev" href="' . $urlPrev . '">&larr;</a>';
-            $paginator .= $previous . ' | ' . $next;
+            $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" id="link-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
+            $previous = '&nbsp;' . ($page - 1 < 0 ? '&larr;' : '<a class="table-previous" id="link-prev" href="' . $urlPrev . '">&larr;</a>') . '&nbsp;';
+            $paginator .= $first . $previous . $middle . $next . $last;
             $paginator .= '<form id="formPagination" action="" method="post">';
             foreach ($params as $param => $value) {
                 if (is_array($value))
@@ -217,6 +223,22 @@ class Table extends \Twig_Extension
         $paginator .= '</div>';
         
         return $paginator;
+    }
+    
+    private function getMiddlePages($page, $total, $url)
+    {
+        $prev1 = $page - 1 < 0 ? null : $page - 1;
+        $prev2 = $page - 2 < 0 ? null : $page - 2;
+        $next1 = $page + 1 > $total - 1 ? null : $page + 1;
+        $next2 = $page + 2 > $total - 1 ? null : $page + 2;
+        
+        $urlPrev1 = is_null($prev1) ? '' : '&nbsp;<a class="table-previous" href="' . str_replace('{page}', $prev1, $url) . '">' . ($prev1 + 1) . '</a>&nbsp;';
+        $urlPrev2 = is_null($prev2) ? '' : '&nbsp;<a class="table-previous" href="' . str_replace('{page}', $prev2, $url) . '">' . ($prev2 + 1) . '</a>&nbsp;';
+        $urlNext1 = is_null($next1) ? '' : '&nbsp;<a class="table-next" href="' . str_replace('{page}', $next1, $url) . '">' . ($next1 + 1) . '</a>&nbsp;';
+        $urlNext2 = is_null($next2) ? '' : '&nbsp;<a class="table-next" href="' . str_replace('{page}', $next2, $url) . '">' . ($next2 + 1) . '</a>&nbsp;';
+        $center = '&nbsp;<span class="table-actual-page">' . ($page + 1) . '</span>&nbsp;';
+        
+        return $urlPrev2 . $urlPrev1 . $center . $urlNext1 . $urlNext2;
     }
     
     private function getScript()
