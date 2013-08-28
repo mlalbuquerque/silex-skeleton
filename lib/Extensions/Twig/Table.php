@@ -111,6 +111,7 @@ class Table extends \Twig_Extension
                 $body .= '<td class="table-actions">';
                 $body .= isset($actions['edit']) ? $this->linkToEdit($entity, $actions['edit']) . '&nbsp;' : '';
                 $body .= isset($actions['delete']) ? $this->linkToDelete($entity, $actions['delete']) . '&nbsp;' : '';
+                $body .= isset($actions['others']) ? $this->linkToOthers($entity, $actions['others']) . '&nbsp;' : '';
                 $body .= '</td>';
             }
 
@@ -147,13 +148,45 @@ class Table extends \Twig_Extension
         return $link;
     }
     
+    private function linkToOthers(\Model\Entity $entity, $rules)
+    {
+        $link = '';
+        foreach ($rules as $rule) { // $rule has indexes title, url and icon
+            if (preg_match_all('/\{(\w+)\}/', $rule['url'], $parts)) {
+                $link .= $this->getLink('others', $parts[0], array($entity, $parts[1]), $rule);
+            } else {
+                $link .= $this->getLink('others', '?', $entity->getPKValue(), $rule);
+            }
+            $link .= '&nbsp;';
+        }
+        return $link;
+    }
+    
     private function getLink($type, $search, $replace, $rules)
     {
-        $linkTmp = $type == 'edit' ?
-                '<a title="Editar" href="[LINK]"><img src="/images/edit.png" /></a>' :
-                '<a title="Excluir" onclick="if (!confirm(\'[MSG]\')) return false;" href="[LINK]"><img src="/images/delete.png" /></a>';
-        $link = '';
         $url = is_array($rules) ? $rules['url'] : $rules;
+        $title = is_array($rules) ? (isset($rules['title']) ? $rules['title'] : '') : '';
+        $icon = is_array($rules) ? (isset($rules['icon']) ? $rules['icon'] : '') : '';
+        
+        switch ($type) {
+            case 'delete':
+                $linkTitle = 'Excluir';
+                $linkIcon = '/images/delete.png';
+                break;
+            case 'edit':
+                $linkTitle = 'Editar';
+                $linkIcon = '/images/edit.png';
+                break;
+            default:
+                $linkTitle = $title;
+                $linkIcon = '/images/' . $icon;
+        }
+        
+        $linkTmp = $type == 'delete' ?
+                '<a title="[TITLE]" onclick="if (!confirm(\'[MSG]\')) return false;" href="[LINK]"><img src="[ICON]" /></a>' :
+                '<a title="[TITLE]" href="[LINK]"><img src="[ICON]" /></a>';
+        
+        $link = '';
         if (is_array($search)) {
             $entity = $replace[0];
             for ($i = 0; $i < count($search); $i++) {
