@@ -199,6 +199,11 @@ class Table extends \Twig_Extension
             $link = str_replace('[LINK]', $href, $linkTmp);
         }
         
+        $link = str_replace('[TITLE]', $linkTitle, $link);
+        $link = strpos($link, '[ICON]') !== false ?
+                str_replace('[ICON]', $linkIcon, $link) :
+                $link;
+        
         return ($type == 'delete' && is_array($rules)) ? 
                 str_replace('[MSG]', $rules['msg'], $link) :
                 str_replace('[MSG]', 'Tem certeza que deseja excluir este item?', $link);
