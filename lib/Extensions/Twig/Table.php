@@ -30,7 +30,19 @@ class Table extends \Twig_Extension
      *          'actions' => Array pointing the URL for edit and delete. You can mix the examples
      *              Ex.1: 'actions' => array(
      *                        'edit' => '/user/edit/?', // It will replace '?' by PK value
-     *                        'delete' => '/user/delete/?'
+     *                        'delete' => '/user/delete/?',
+     *                        'others' => array( // as many links as you want
+     *                            array(
+     *                                'title' => 'Link Title',
+     *                                'url'   => '/user/something/{id}/{name},
+     *                                'icon'  => 'image.png'
+     *                            ),
+     *                            array(
+     *                                'title' => 'Other Title',
+     *                                'url'   => '/user/xyz/?,
+     *                                'icon'  => 'image2.png'
+     *                            )
+     *                        )
      *                    )
      *              Ex.2: 'actions' => array(
      *                        'edit' => '/link/edit/{id}', // It will use entity's 'id' attribute to replace
