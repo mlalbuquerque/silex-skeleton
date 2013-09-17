@@ -44,10 +44,10 @@ $app['twig'] = $app->share($app->extend('twig', function($twig, $app) {
 }));
 
 // Browser info
-if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']))
+if (isset($_SERVER['HTTP_USER_AGENT']) && !empty($_SERVER['HTTP_USER_AGENT']) && $app['debug'])
 {
     $browser = array();
-    preg_match('#(?P<name>Firefox|Chrome)/(?P<version>\d+.\d+)#', $_SERVER['HTTP_USER_AGENT'], $browser);
+    preg_match('#(?P<name>Firefox|Chrome|MSIE|Safari|Opera)[/| ](?P<version>\d+.\d+)#', $_SERVER['HTTP_USER_AGENT'], $browser);
     $app['browser.name'] = strtolower($browser['name']);
     $app['browser.version'] = strtolower($browser['version']);
 }
@@ -69,6 +69,8 @@ $app->register(new Log\LoggerServiceProvider(), array(
                 case 'chrome':
                     $handler = new Monolog\Handler\ChromePHPHandler();
                     break;
+                default:
+                    $handler = new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.maxfiles'], $app['monolog.level']);
             }
         } else {
             $handler = new Monolog\Handler\RotatingFileHandler($app['monolog.logfile'], $app['monolog.maxfiles'], $app['monolog.level']);
