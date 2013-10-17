@@ -253,7 +253,7 @@ class Table extends \Twig_Extension
         if (strtoupper($httpMethod) === 'GET') {
             $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
             $previous = '&nbsp;' . ($page - 1 < 0 ? '&larr;' : '<a class="table-previous" href="' . $urlPrev . '">&larr;</a>') . '&nbsp;';
-            $paginator .= $first . $previous . $middle . $next . $last;
+            $paginator .= $this->checkOtherParameters($first . $previous . $middle . $next . $last);
         } elseif (strtoupper($httpMethod) === 'POST') {
             $params = $this->app['request']->request->all();
             $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" id="link-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
@@ -289,6 +289,19 @@ class Table extends \Twig_Extension
         $center = '&nbsp;<span class="table-actual-page">' . ($page + 1) . '</span>&nbsp;';
         
         return $urlPrev2 . $urlPrev1 . $center . $urlNext1 . $urlNext2;
+    }
+    
+    private function checkOtherParameters($url)
+    {
+        $matches = array();
+        preg_match_all('/{(\w+)}/', $url, $matches);
+        $parameters = $matches[1];
+        
+        foreach ($parameters as $parameter) {
+            $url = str_replace('{' . $parameter . '}', $this->app['request']->get($parameter), $url);
+        }
+        
+        return $url;
     }
     
     private function getScript()
