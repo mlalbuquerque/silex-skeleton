@@ -274,6 +274,8 @@ abstract class Dao implements \ArrayAccess
 
     protected function getSingleResult()
     {
+        $this->qb->setFirstResult(0);
+        $this->qb->setMaxResults(1);
         return $this->qb->execute()->fetch(\PDO::FETCH_ASSOC);
     }
 
@@ -312,7 +314,7 @@ abstract class Dao implements \ArrayAccess
      */
     protected function prepareSelectFrom(array $append = array())
     {
-        $this->qb->resetQueryParts();
+        $this->qb->resetQueryParts()->setFirstResult(0)->setMaxResults(null);
         $this->qb->setParameters(array());
         $this->qb
              ->select($this->getSelectColumns($this->getTableAlias()))
