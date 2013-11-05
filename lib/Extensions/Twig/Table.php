@@ -63,6 +63,7 @@ class Table extends \Twig_Extension
     {
         $httpMethod = $this->app['request']->getMethod();
         $route = $this->app['request']->getRequestUri();
+        $url = $this->app['request']->getPathInfo();
         $class = isset($options['class']) ? $options['class'] : 'ssk-table';
         if (isset($options['cols'])) {
             $cols = $options['cols'] + $attributes;
@@ -72,7 +73,15 @@ class Table extends \Twig_Extension
         $actions = isset($options['actions']) ? $options['actions'] : array();
         $modifiers = isset($options['modifiers']) ? $options['modifiers'] : array();
         
-        $table = '<table class="' . $class . '">';
+        $table = isset($options['sort']) || isset($options['search']) ?
+                '<form id="ssk_table_modifier_form" action="' . $url . '" method="POST">' . "\n" : '';
+        $table .= isset($options['sort']) ?
+                $this->getSortingArea($attributes, $cols, $options['sort']) : '';
+        $table .= isset($options['search']) ?
+                $this->getSearchingArea($attributes, $cols, $options['search']) : '';
+        $table .= isset($options['sort']) || isset($options['search']) ?
+                '<a href="' . $url . '">Apagar consulta</a></form>' : '';
+        $table .= '<table class="' . $class . '">';
         $table .= $this->getTableHeader($cols, count($attributes), isset($options['actions']));
         $table .= $this->getTableBody($attributes, $entities, $actions, $modifiers);
         $table .= '</table>';
@@ -256,8 +265,8 @@ class Table extends \Twig_Extension
             $paginator .= $this->checkOtherParameters($first . $previous . $middle . $next . $last);
         } elseif (strtoupper($httpMethod) === 'POST') {
             $params = $this->app['request']->request->all();
-            $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" id="link-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
-            $previous = '&nbsp;' . ($page - 1 < 0 ? '&larr;' : '<a class="table-previous" id="link-prev" href="' . $urlPrev . '">&larr;</a>') . '&nbsp;';
+            $next = '&nbsp;' . ($page + 1 >= $totalPages ? '&rarr;' : '<a class="table-next" href="' . $urlNext . '">&rarr;</a>') . '&nbsp;';
+            $previous = '&nbsp;' . ($page - 1 < 0 ? '&larr;' : '<a class="table-previous" href="' . $urlPrev . '">&larr;</a>') . '&nbsp;';
             $paginator .= $first . $previous . $middle . $next . $last;
             $paginator .= '<form id="formPagination" action="" method="post">';
             foreach ($params as $param => $value) {
@@ -291,6 +300,75 @@ class Table extends \Twig_Extension
         return $urlPrev2 . $urlPrev1 . $center . $urlNext1 . $urlNext2;
     }
     
+    private function getSortingArea($keys, $values, $options)
+    {
+        $id = isset($options['selectId']) ? $options['selectId'] : 'ssk_sort_select';
+        $default = isset($options['defaultText']) ? $options['defaultText'] : '-- Choose --';
+        $sortVal = $this->app['request']->get($options['paramName'], null);
+        $container = isset($options['container']) ? $options['container'] : 'ssk_sort_container';
+        $html = '<div id="' . $container . '">' . "\n";
+        $html .= '<select id="' . $id . '" name="' . $options['paramName'] . '">' . "\n";
+        $html .= '    <option value="">' . $default . '</option>' . "\n";
+        foreach ($keys as $idx => $val) {
+            $html .= '    <option value="' . $val . ' ASC"' . ($sortVal == $val.' ASC' ? ' selected' : '') . '>' . \Helper\Text::generateLabel($values[$idx]) . ' ascendentemente</option>' . "\n";
+            $html .= '    <option value="' . $val . ' DESC"' . ($sortVal == $val.' DESC' ? ' selected' : '') . '>' . \Helper\Text::generateLabel($values[$idx]) . ' descendentemente</option>' . "\n";
+        }
+
+        $html .= '</select>' . "\n";
+        $html .= '<script>' . "\n";
+        $html .= '    var select = document.getElementById("' . $id . '");' . "\n";
+        $html .= '    select.addEventListener("change", sskCallSort, false);' . "\n";
+        $html .= '    function sskCallSort() {' . "\n";
+        $html .= '        var sort = select.options[select.selectedIndex].value;' . "\n";
+        $html .= '        var form = document.getElementById("ssk_table_modifier_form");' . "\n";
+        $html .= '        if (sort != "")' . "\n";
+        $html .= '            form.submit();' . "\n";
+        $html .= '    }' . "\n";
+        $html .= '</script>' . "\n";
+        $html .= '</div>' . "\n";
+        
+        return $html;
+    }
+    
+    private function getSearchingArea($keys, $values, $options)
+    {
+        $search = $this->app['request']->get($options['paramName'], array('value' => '', 'field' => ''));
+        $btID = isset($options['buttonId']) ? $options['buttonId'] : 'ssk_search_input';
+        $selID = isset($options['selectId']) ? $options['selectId'] : 'ssk_search_select';
+        $placeholder = isset($options['placeholder']) ? $options['placeholder'] : 'Input search string';
+        $default = isset($options['defaultText']) ? $options['defaultText'] : '-- Choose --';
+        $text = isset($options['buttonText']) ? $options['buttonText'] : 'Search';
+        $container = isset($options['container']) ? $options['container'] : 'ssk_search_container';
+        $error = isset($options['error']) ? $options['error'] : 'Must choose field!';
+        
+        $html = '<div id="' . $container . '">' . "\n";
+        $html .= '<select id="' . $selID . '" name="' . $options['paramName'] . '[field]">' . "\n";
+        $html .= '    <option value="">' . $default . '</option>' . "\n";
+        foreach ($keys as $idx => $val)
+            $html .= '    <option value="' . $val . '"' . ($search['field'] == $val ? ' selected' : '') . '>' . \Helper\Text::generateLabel($values[$idx]) . '</option>' . "\n";
+        $html .= '</select>' . "\n";
+        $html .= '<input type="search" name="' . $options['paramName'] . '[value]" value="' . $search['value'] . '" placeholder="' . $placeholder . '" />' . "\n";
+        $html .= '<button id="' . $btID . '">' . $text . '</button>' . "\n";
+        
+        $html .= '<script>' . "\n";
+        $html .= '    var button = document.getElementById("' . $btID . '");' . "\n";
+        $html .= '    button.addEventListener("click", sskCallSearch, false);' . "\n";
+        $html .= '    function sskCallSearch(evt) {' . "\n";
+        $html .= '        evt.preventDefault();' . "\n";
+        $html .= '        var form = document.getElementById("ssk_table_modifier_form");' . "\n";
+        $html .= '        var selectSearch = document.getElementById("' . $selID . '");' . "\n";
+        $html .= '        var searchField = selectSearch.options[selectSearch.selectedIndex].value;' . "\n";
+        $html .= '        if (searchField != "")' . "\n";
+        $html .= '            form.submit();' . "\n";
+        $html .= '        else' . "\n";
+        $html .= '            alert("' . $error . '");' . "\n";
+        $html .= '    }' . "\n";
+        $html .= '</script>' . "\n";
+        $html .= '</div>' . "\n";
+        
+        return $html;
+    }
+    
     private function checkOtherParameters($url)
     {
         $matches = array();
@@ -308,7 +386,7 @@ class Table extends \Twig_Extension
     {
         return <<<SCRIPT
 <script>
-    function submit(evt) {
+    function sskSubmitPagination(evt) {
         evt.preventDefault();
         var form = document.getElementById("formPagination");
         form.action = this.href;
@@ -316,15 +394,13 @@ class Table extends \Twig_Extension
         return false;
     }
     
-    if (document.getElementById("link-next"))
-        document.getElementById("link-next").addEventListener(
-            'click', submit, false
-        );
-    
-    if (document.getElementById("link-prev"))
-        document.getElementById("link-prev").addEventListener(
-            'click', submit, false
-        );
+    var links = document.querySelectorAll(".table-previous, .table-next");
+    console.log(links);
+    if (links) {
+        for (var i = 0; i < links.length; i++) {
+            links[i].addEventListener('click', sskSubmitPagination, false);
+        }
+    }
 </script>
 SCRIPT;
     }

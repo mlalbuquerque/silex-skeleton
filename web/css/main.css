@@ -45,6 +45,38 @@ td, th {
     padding: 0 6px;
 }
 
+#ssk_table_modifier_form a {
+    color: #116295;
+    font-size: 0.6em;
+    font-weight: bold;
+}
+
+#ssk_sort_container select, #ssk_sort_container button,
+#ssk_search_container select, #ssk_search_container button {
+    background-color: #116295;
+    border: 1px solid navy;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    padding: 4px;
+}
+
+#ssk_sort_container input[type="search"],
+#ssk_search_container input[type="search"]
+{
+    border: 1px solid navy;
+    border-radius: 5px;
+    padding: 5px 4px;
+}
+
+#ssk_sort_container input[type="search"]:focus,
+#ssk_search_container input[type="search"]:focus
+{
+    background-color: #cdfeff;
+    border: 3px solid navy;
+    padding: 4px 3px;
+}
+
 h1.error {
     color: #116295;
     font-family: Verdana, sans-serif;
