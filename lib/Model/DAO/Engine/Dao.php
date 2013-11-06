@@ -372,7 +372,8 @@ abstract class Dao implements \ArrayAccess
     protected function where($where)
     {
         $this->qb->where($where[0]);
-        $this->qb->setParameters($where[1]);
+        $params = $this->qb->getParameters();
+        $this->qb->setParameters($params + $where[1]);
     }
     
     protected function orderBy($orderBy)
@@ -390,18 +391,21 @@ abstract class Dao implements \ArrayAccess
     protected function having($having)
     {
         $this->qb->having($having[0]);
-        $this->qb->setParameters($having[1]);
+        $params = $this->qb->getParameters();
+        $this->qb->setParameters($params + $having[1]);
     }
     
     protected function join($joinRules)
     {
+        $params = $this->qb->getParameters();
         foreach ($joinRules as $table => $joinRule) {
             $type = isset($joinRule['type']) ? strtolower($joinRule['type']) : '';
             $method = empty($type) ? 'join' : $type . 'Join';
             $this->qb->$method($this->getTableAlias(), $table, $joinRule['alias'], $joinRule['condition']);
             if (isset($joinRule['values']))
-                $this->qb->setParameters($joinRule['values']);
+                $params = $params + $joinRule['values'];
         }
+        $this->qb->setParameters($params);
     }
 
     /**
