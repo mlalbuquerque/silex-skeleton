@@ -139,7 +139,10 @@ abstract class Dao implements \ArrayAccess
         $this->qb->resetQueryParts();
         $this->qb->setParameters(array());
         
-        $select = isset($options['select']) ? implode(', ', $options['select']) . ', ' : '';
+        $select = isset($options['select']) ? $options['select'] : array();
+        $select[] = 'COUNT(*) as total';
+        $this->qb->addSelect($select)
+                 ->from($this->getTableName(), $this->getTableAlias());
         
         if (isset($options['where']))
             $this->where($options['where']);
@@ -152,8 +155,6 @@ abstract class Dao implements \ArrayAccess
         
         $this->qb->setFirstResult(0);
         $this->qb->setMaxResults(1);
-        $this->qb->addSelect($select . 'COUNT(*) as total')
-                 ->from($this->getTableName(), $this->getTableAlias());
         
         $result = $this->getSingleResult();
         return empty($result) ? 0 : $result['total'];
@@ -371,7 +372,9 @@ abstract class Dao implements \ArrayAccess
      */
     protected function where($where)
     {
-        $this->qb->where($where[0]);
+        $select = $this->qb->getQueryPart('select');
+        $query = empty($select) ? $where[0] : $this->setCorrectParamName($where[0], $select);
+        $this->qb->where($query);
         $params = $this->qb->getParameters();
         $this->qb->setParameters($params + $where[1]);
     }
@@ -465,6 +468,46 @@ abstract class Dao implements \ArrayAccess
                 $new_cols[] = $col;
 
         $this->cols = $new_cols;
+    }
+    
+    /**
+     * Sets the correct parameter name in the WHERE clause
+     * @param string the WHERE clause
+     * @param array columns used in SELECT clause
+     */
+    private function setCorrectParamName($where, $select)
+    {
+        $expressions = array();
+        preg_match_all('/([\'|"|:]?\w+[\'|"]?) ?(=|<>|<=|>=|<|>|LIKE|NOT LIKE) ?([\'|"|:]?\w+[\'|"]?)/', $where, $expressions);
+
+        $colsInWhere = array();
+        foreach ($expressions[1] as $col)
+            if (strpos($col, ':') === false && strpos($col, '"') === false && strpos($col, "'") === false)
+                $colsInWhere[] = $col;
+        foreach ($expressions[3] as $col)
+            if (strpos($col, ':') === false && strpos($col, '"') === false && strpos($col, "'") === false)
+                $colsInWhere[] = $col;
+        
+        $colsInSelect = $this->getColsAlias($select);
+
+        foreach ($colsInWhere as $col)
+            $where = preg_replace('/(?<![\.:"\'])' . $col . '/', $colsInSelect[$col], $where);
+
+        return $where;
+    }
+    
+    private function getColsAlias($select)
+    {
+        $aliases = array();
+        foreach ($select as $fullCol) {
+            $colParts = array();
+            preg_match('/((\w+\.)?(\w+))( as (\w+))?/', $fullCol, $colParts);
+            if ($colParts[0] === $colParts[1])
+                $aliases[$colParts[3]] = $colParts[1];
+            else
+                $aliases[$colParts[5]] = $colParts[1];
+        }
+        return $aliases;
     }
     
 }
