@@ -307,7 +307,7 @@ abstract class Dao implements \ArrayAccess
                 return $prefix.'.'.$value;
             }, $selectedCols);
         }
-        return implode(', ', $selectedCols);
+        return $selectedCols;
     }
     
     /**
