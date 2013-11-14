@@ -10,7 +10,8 @@ abstract class Dao implements \ArrayAccess
     public function __construct(\Pimple $dbs)
     {
         $this->dbs = $dbs;
-        $this->db = reset(reset($dbs));
+        $connections = reset(reset($dbs));
+        $this->db = $connections(null, null);
         $this->qb = $this->db->createQueryBuilder();
         $this->cols = $this->getOriginalColumns();
     }
