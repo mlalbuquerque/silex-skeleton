@@ -223,7 +223,7 @@ abstract class Dao implements \ArrayAccess
         
         $condition = array();
         if (is_array($pk)) {
-            for ($i = 0; i < count($pk); $i++)
+            for ($i = 0; $i < count($pk); $i++)
                 $condition[$pk[$i]] = $pkValue[$i];
         } else {
             $condition[$pk] = $pkValue;
