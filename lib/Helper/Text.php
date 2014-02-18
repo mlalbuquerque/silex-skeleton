@@ -86,4 +86,31 @@ class Text
         return 'mongodb://' . $user . implode(',', $hosts) . $db;
     }
     
+    public static function addAliasTable(array $columns, $alias)
+    {
+        for ($i = 0; $i < count($columns); $i++) {
+            if (($index = strpos($columns[$i], '(')) === false) {
+                $columns[$i] = strpos($columns[$i], '.') === false ? $alias . '.' . $columns[$i] : $columns[$i];
+            } else {
+                $columns[$i] = self::addAliasTableWithAggregateFunc($columns[$i], $alias);
+            }
+        }
+        
+        return $columns;
+    }
+    
+    
+    
+    private static function addAliasTableWithAggregateFunc($column, $alias)
+    {
+        $parts = array();
+        $modifiedCol = $column;
+        if (preg_match('/(count|max|min|avg|sum)\(([\w|\.]+)\)( as ([\w|_]+))?/', $column, $parts)) {
+            $colChanged = strpos($parts[2], '.') === false ? $alias . '.' . $parts[2] : $parts[2];
+            $newName = isset($parts[4]) ? $parts[4] : str_replace('.', '', $parts[1] . $parts[2]);
+            $modifiedCol = $parts[1] . '(' . $colChanged . ') as ' . $newName;
+        }
+        return $modifiedCol;
+    }
+    
 }

@@ -362,9 +362,8 @@ abstract class Dao implements \ArrayAccess
     protected function select($select)
     {
         $alias = $this->getTableAlias();
-        $this->qb->addSelect(array_map(function ($col) use ($alias) {
-            return strpos($col, '.') === false ? $alias . '.' . $col : $col;
-        }, $select));
+        $selects = \Helper\Text::addAliasTable($select, $alias);
+        $this->qb->addSelect($selects);
     }
 
     /**
