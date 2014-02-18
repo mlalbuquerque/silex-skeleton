@@ -87,8 +87,7 @@ abstract class Dao implements \ArrayAccess
      */
     public function findAll(array $options = array(), $withRelations = false)
     {
-        $this->prepareSelectFrom();
-        
+        $this->prepareSelectFrom((isset($options['select']) ? $options['select'] : null));
         if (isset($options['select']))
             $this->select($options['select']);
         
@@ -315,13 +314,15 @@ abstract class Dao implements \ArrayAccess
      * Prepares SELECT and FROM clauses to query using \Doctrine\DBAL\Query\QueryBuilder
      * @param array $append Array of other columns to append to SELECT
      */
-    protected function prepareSelectFrom(array $append = array())
+    protected function prepareSelectFrom(array $select = null, array $append = array())
     {
         $this->qb->resetQueryParts()->setFirstResult(0)->setMaxResults(null);
         $this->qb->setParameters(array());
-        $this->qb
-             ->select($this->getSelectColumns($this->getTableAlias()))
-             ->from($this->getTableName(), $this->getTableAlias());
+        $this->qb->from($this->getTableName(), $this->getTableAlias());
+        
+        if (is_null($select))
+            $this->qb->select($this->getSelectColumns($this->getTableAlias()));
+        
         if (!empty($append))
             $this->qb->addSelect(implode(', ', $append));
     }
