@@ -262,6 +262,14 @@ abstract class Dao implements \ArrayAccess
         $this->db->rollback();
     }
     
+    public function sequenceNextValue($seqName)
+    {
+        $sql = 'SELECT NEXTVAL(:sequence) as value';
+        $st = $this->db->executeQuery($sql, array('sequence' => $seqName));
+        $sequence = $st->fetch(\PDO::FETCH_OBJ);
+        return $sequence->value;
+    }
+    
     protected function getResults($start = null, $maxResults = null)
     {
         if (!empty($start))
