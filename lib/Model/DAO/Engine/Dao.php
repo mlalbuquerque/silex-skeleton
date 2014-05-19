@@ -446,6 +446,8 @@ abstract class Dao implements \ArrayAccess
             foreach ($oneToMany as $table => $info) {
                 $this->qb->resetQueryParts();
                 $this->qb->setParameters(array());
+                $this->qb->setMaxResults(null);
+                $this->qb->setFirstResult(null);
                 
                 $alias = substr($table, 0, 1);
                 $this->qb->select('*')->from($table, $alias);
